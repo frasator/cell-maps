@@ -1,0 +1,405 @@
+<script src="bower_components/file-saver.js/FileSaver.js"></script>
+<script src="bower_components/pako/dist/pako.min.js"></script>
+
+<script src="bower_components/stevia-elements/src/manager/stevia-manager.js"></script>
+
+<link rel="import" href="bower_components/polymer/polymer.html">
+<link rel="import" href="bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<script src="bower_components/cookies-js/dist/cookies.min.js"></script>
+<script src="bower_components/crypto-js/core.js"></script>
+<script src="bower_components/crypto-js/sha1.js"></script>
+
+<link rel="import" href="bower_components/stevia-elements/src/stv-header.html">
+<link rel="import" href="bower_components/stevia-elements/src/stv-application-behavior.html">
+<link rel="import" href="bower_components/stevia-elements/src/dropdown/stv-dropdown.html">
+
+<link rel="import" href="bower_components/stevia-elements/src/file/stv-file-browser.html">
+<link rel="import" href="bower_components/stevia-elements/src/job/stv-job-browser.html">
+
+<script src="bower_components/network-viewer/conf/config.js"></script>
+<link rel="import" href="bower_components/network-viewer/network-viewer.html">
+
+<!-- <link rel="import" href="../lib/jsorolla/src/lib/components/results/jso-job-result.html"> -->
+
+<dom-module id="cell-maps-element">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning"></style>
+    <style>
+        :host {
+            display: block;
+            position: relative;
+            cursor: default;
+            font-size: 13px;
+            background-color: var(--default-primary-color);
+            height: 100%;
+            width: 100%;
+        }
+
+        stv-header {
+            position: absolute;
+            top: 0;
+        }
+
+        stv-footer {
+            position: absolute;
+            bottom: 0;
+        }
+
+        .content {
+            position: absolute;
+            width: 100%;
+            top: 60px;
+            /*height: calc(100vh - 60px);*/
+            /*background-color: transparent;*/
+        }
+
+        #fileBrowserPanel {
+            position: absolute;
+            top: 0px;
+            left: 0;
+            width: 600px;
+            height: 400px;
+            min-width: 600px;
+            min-height: 400px;
+        }
+
+        #jobBrowserPanel {
+            position: absolute;
+            top: 0px;
+            right: 0;
+            width: 600px;
+            height: 400px;
+            min-width: 600px;
+            min-height: 400px;
+        }
+
+        #saveSessionFolderPanel {
+            position: absolute;
+            top: 0px;
+            right: 0;
+            width: 600px;
+            height: 400px;
+            min-width: 600px;
+            min-height: 400px;
+        }
+        /*jso-job-result {
+            min-height: calc(100vh - 60px);
+        }*/
+
+        network-viewer {
+            height: calc(100vh - 60px);
+            box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.2);
+        }
+
+        #settings {
+            width: 400px;
+            padding: 20px;
+        }
+
+        #configure {
+            position: absolute;
+            top: 94px;
+            right: 0;
+            width: 300px;
+        }
+
+        @media (max-width: 1100px) {
+            .option-text {
+                display: none;
+            }
+        }
+
+        .userid {
+            color: var(--accent-color);
+            font-size: 16px;
+        }
+
+        #description {
+            color: var(--accent-color);
+            font-weight: normal;
+        }
+    </style>
+    <template>
+        <div class="content" menu-option="job">
+            <!-- <jso-job-result id="jobResult" jobItem="{{jobItem}}" on-job-close="handleCloseJobResult" network-viewer="{{networkViewer}}" selected-option="{{selectedOption}}">
+            </jso-job-result> -->
+        </div>
+
+
+        <div class="content" menu-option="home">
+            <network-viewer id="networkViewer" user-data="{{userData}}" studies="{{studies}}" selectedStudy="{{selectedStudy}}" projects="{{projects}}" on-need-refresh="handleUserNeedRefresh" on-job-launched="handleJobLaunched" on-session-manager-hidden="handleSessionManagerHidden">
+            </network-viewer>
+        </div>
+
+        <div class="content" menu-option="home,job">
+            <stv-panel id="jobBrowserPanel" hidden collapsible movable closable on-hidden="handlePanelHidden">
+                <div class="header">
+                    <i class="fa fa-flask"></i>&nbsp; Browse my analysis
+                </div>
+                <stv-job-browser id="jobBrowser" class="container flex" on-jobselect="handleJobSelect" allowed-tools="{{allowedTools}}" on-need-refresh="handleUserNeedRefresh" user-data="{{userData}}" disable-relaunch="{{disableRelaunch}}" hide-status-filter="{{hideStatusFilter}}" hide-tool-filter="{{hideToolFilter}}">
+                </stv-job-browser>
+            </stv-panel>
+            <stv-panel id="fileBrowserPanel" hidden collapsible movable closable resizable on-hidden="handlePanelHidden">
+                <div class="header">
+                    <i class="fa fa-folder-o"></i>&nbsp; Browse my analysis data
+                </div>
+                <stv-file-browser id="fileBrowser" class="container flex" on-fileselect="handleFileSelect" bioformats="{{bioformats}}" on-need-refresh="handleUserNeedRefresh" user-data="{{userData}}">
+                    <div class="custom-button stv-btn stv-btn-shdw" file-ext="json.gz" on-click="handleLoadSessionFileBrowser">Load session</div>
+                </stv-file-browser>
+            </stv-panel>
+
+            <stv-panel id="saveSessionFolderPanel" fixed modal hidden closable on-hidden="handlePanelHidden">
+                <div class="header">
+                    <i class="fa fa-cloud"></i>&nbsp; Please select a folder to save session...
+                </div>
+                <stv-file-browser id="saveSessionFolder" enable-select-ok class="container" mode="folder" user-data="{{userData}}" on-ok-click="handleSaveClickOk">
+                </stv-file-browser>
+            </stv-panel>
+            <stv-panel id="saveSessionNamePanel" fixed modal hidden closable>
+                <div class="header">
+                    <i class="fa fa-cloud"></i>&nbsp; Session name...
+                </div>
+                <div class="container" style="padding:10px 20px;">
+                    <input id="sessionNameInput" class="stv" type="text" placeholder="Session name">
+                    <div class="horizontal layout center end-justified" style="margin-top:10px;">
+                        <div class="stv-btn stv-btn-shdw" style="width:100px; margin:2px;" on-click="handleCancelSessionName">Cancel</div>
+                        <div class="stv-btn stv-btn-shdw" style="width:100px; margin:2px;" on-click="handleOkSessionName">OK</div>
+                    </div>
+                </div>
+            </stv-panel>
+
+            </stv-panel>
+        </div>
+
+        <stv-header id="stvHeader" hide-jobs hide-browse selected-option="{{selectedOption}}" user-data="{{userData}}" on-login="handleLogin" on-logout="handleLogout">
+            <!--<div hidden class="icon">-->
+            <!--<img src="" style="height: 0px;margin: 5px 0px 0 0;">-->
+            <!--</div>-->
+            <span class="title">
+                Cell <span style="font-weight:normal;">Maps</span>
+            </span>
+            <span id="description" class="description">
+                Systems Biology Visualization
+            </span>
+
+            <div id="menu" class="menu horizontal layout flex center">
+                <!-- <div style="margin-left:4vw;"></div> -->
+                <div style="margin-left:2vw;"></div>
+                <!-- <div title="Sessions" class="option" on-click="handleLoggedOnlyMenuPanel" data-panel="#networkViewer stv-panel[id=sessionManagerPanel]">
+                    <i class="fa fa-cloud"></i>
+                    <span class="option-text">My Sessions</span>
+                </div> -->
+                <div title="Save session" class="option" on-click="handleLoggedOnlyMenuPanel" data-panel="saveSessionFolderPanel">
+                    <i class="fa fa-cloud"></i>
+                    <span class="option-text">Save session</span>
+                </div>
+                <div class="flex"></div>
+                <div title="Browse my data" class="option" on-click="handleLoggedOnlyMenuPanel" data-panel="fileBrowserPanel">
+                    <i class="fa fa-folder"></i>
+                    <span class="option-text">My data</span>
+                </div>
+                <div title="Browse my jobs" class="option" on-click="handleLoggedOnlyMenuPanel" data-panel="jobBrowserPanel">
+                    <i class="fa fa-rocket"></i>
+                    <span class="option-text">My analysis</span>
+                </div>
+                <!--<div class="flex" style="margin-left:2vw;"></div>-->
+                <!--<div title="Settings" class="option" on-click="handleMenuPanel" data-panel="settingsPanel">-->
+                <!--<i class="fa fa-wrench"></i>-->
+                <!--<span class="option-text">Settings</span>-->
+                <!--</div>-->
+            </div>
+
+            <stv-dropdown dark class="helpmenu">
+                <div data-button><i class="fa fa-question-circle"></i></div>
+                <ul data-menu>
+                    <a href="https://github.com/opencb/cell-maps/wiki/About-CellMaps" target="_blank">
+                        <li>
+                            <i class="fa fa-list-alt"></i> &nbsp; About
+                        </li>
+                    </a>
+                    <a href="https://github.com/opencb/cell-maps/wiki/Documentation" target="_blank">
+                        <li>
+                            <i class="fa fa-book"></i> &nbsp; Documentation
+                        </li>
+                    </a>
+                    <a href="https://github.com/opencb/cell-maps/wiki/Working-examples" target="_blank">
+                        <li>
+                            <i class="fa fa-magic"></i> &nbsp; Working examples
+                        </li>
+                    </a>
+                </ul>
+            </stv-dropdown>
+        </stv-header>
+        <!--<stv-footer></stv-footer>-->
+    </template>
+
+    <script>
+        Polymer({
+            is: "cell-maps-element",
+            behaviors: [StvApplicationBehavior],
+            properties: {
+                bioformats: {
+                    type: Array,
+                    notify: true,
+                    value: [BIOFORMATS["IDLIST"], BIOFORMATS["IDLIST_RANKED"], BIOFORMATS["CELLMAPS_SESSION"]]
+                },
+                allowedTools: {
+                    type: Array,
+                    value: ['snow', 'network-miner', 'fatigo', /* 'reactome-fi' */ ]
+                },
+                cellBaseHost: {
+                    type: String,
+                    value: CellBaseManager.host
+                },
+                networkViewer: {
+                    type: Object
+                }
+            },
+            ready: function() {
+                var me = this;
+                // /* Update active panels */
+                // var panels = Polymer.dom(this.root).querySelectorAll('jso-panel');
+                // for (var i = 0; i < panels.length; i++) {
+                //     var panEl = panels[i];
+                //     var id = panEl.getAttribute('id');
+                //     var el = Polymer.dom(this.$.menu).querySelector('[data-panel=' + id + ']');
+                //     if (el) {
+                //         if (panEl.hidden) {
+                //             el.removeAttribute('active')
+                //         } else {
+                //             el.setAttribute('active', '');
+                //         }
+                //     }
+                // }
+                /* Restore last session */
+                this.async(function() {
+                    this.networkViewer = this.$.networkViewer;
+                    this._loadNetworkSessionLocalStorage();
+                    setInterval(function() {
+                        me.networkViewer.saveLocalStorage();
+                    }, 15000);
+
+                    if (window.innerHeight < 800) {
+                        this.networkViewer.$.nodeRenderPanel.hidden = true;
+                        this.networkViewer.$.edgeRenderPanel.hidden = true;
+                    }
+
+                });
+            },
+            handleFileSelect: function(e) {
+                // console.log("file");
+                // console.log(e.detail);
+                // var file = e.detail;
+                // if (file.index && file.index.status == 'READY') {}
+            },
+            handleJobSelect: function(e) {
+                var job = e.detail;
+                if (job && job.status === 'READY') {
+                    this.set('selectedOption', 'job');
+                    this.$.jobResult.set('jobItem', e.detail);
+                }
+            },
+            handleCloseJobResult: function(e) {
+                this.set('selectedOption', 'home');
+            },
+            handleJobLaunched: function(e) {
+                this.$.jobsPanel.show();
+            },
+            handleLogin: function() {
+                this.selectedOption = "home";
+                if (this._lastLogedRequest) {
+                    this._lastLogedRequest.hidden = false;
+                    this._lastLogedRequest = null;
+                }
+            },
+            handleLogout: function() {
+                this.$.fileBrowserPanel.hidden = true;
+                this.$.jobBrowserPanel.hidden = true;
+            },
+            handleUserNeedRefresh: function() {
+                this.$.jsoHeader.getUserInfo(true);
+            },
+            handleSessionManagerHidden: function(e) {
+                var panel = e.detail;
+                var option = Polymer.dom(this.$.menu).querySelector('[title=Sessions]');
+                if (panel.hidden) {
+                    option.removeAttribute('active');
+                } else {
+                    option.setAttribute('active', '');
+                }
+            },
+            _loadNetworkSessionLocalStorage: function() {
+                if (this.networkViewer.loadLocalStorage()) {
+                    console.log('Session found :), restoring information... ')
+                } else {
+                    console.log('Session not found :( ')
+                }
+            },
+            handleLoadSessionFileBrowser: function(e) {
+                var me = this;
+                var file = this.$.fileBrowser.selectedFile;
+                SteviaManager.files.download({
+                    id: file._id,
+                    request: {
+                        responseType: 'arraybuffer',
+                        success: function(response, req) {
+                            var jsonStr = pako.ungzip(response, {
+                                to: 'string'
+                            });
+                            me.$.networkViewer.loadJSON(JSON.parse(jsonStr));
+                            me.$.networkViewer.lastLoadedFileName = me.$.fileBrowser.selectedFile.name;
+                        }
+                    }
+                });
+            },
+            handleSaveClickOk: function(e) {
+                this.$.saveSessionNamePanel.show();
+            },
+            handleOkSessionName: function(e) {
+                var me = this;
+                var folder = this.$.saveSessionFolder.selectedFile;
+                var name = this.$.sessionNameInput.value;
+                var content = pako.gzip(JSON.stringify(this.$.networkViewer));
+                var blob = new Blob([content], {
+                    type: "application/gzip"
+                });
+                var config = {
+                    file: blob,
+                    name: name + '.json.gz',
+                    bioFormat: 'CELLMAPS_SESSION',
+                    callbackProgress: function(chunk, total, response) {
+                        console.log(Math.round((chunk.id / total) * 100));
+                        if (chunk.last) {
+                            me.$.sessionNameInput.value = ''
+                            var uploadedFile = response.file;
+                            me.$.saveSessionFolderPanel.hide();
+                            me.$.saveSessionNamePanel.hide();
+                            me.$.fileBrowserPanel.show();
+                        }
+                    },
+                    callbackExists: function(file) {
+                        alert('File already exists with that name. Please select a different name.');
+                    },
+                    error: function(msg) {
+                        console.log(msg);
+                    }
+                };
+                if (folder != null) {
+                    config.parentId = folder._id
+                } else {
+                    config.parentId = this.$.saveSessionFolder.folder._id
+                }
+                if (name != '') {
+                    SteviaManager.files.upload(config);
+                }
+            },
+            handleCancelSessionName: function(e) {
+                this.$.saveSessionFolder.reset();
+                this.$.saveSessionNamePanel.hide();
+            },
+            __iliketomoveit: function() {
+                this.$.networkViewer.setLayout('Force directed (simulation)')
+            },
+        });
+    </script>
+</dom-module>
