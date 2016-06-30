@@ -16,6 +16,9 @@
 
 <link rel="import" href="bower_components/stevia-elements/src/file/stv-file-browser.html">
 <link rel="import" href="bower_components/stevia-elements/src/job/stv-job-browser.html">
+<link rel="import" href="bower_components/stevia-elements/src/stv-cluster-status.html">
+<link rel="import" href="bower_components/stevia-elements/src/stv-dialog/stv-dialog.html">
+<link rel="import" href="bower_components/stevia-elements/src/stv-launcher/stv-launcher.html">
 
 <script src="bower_components/network-viewer/conf/config.js"></script>
 <link rel="import" href="bower_components/network-viewer/network-viewer.html">
@@ -229,6 +232,10 @@
                     </a>
                 </ul>
             </stv-dropdown>
+            <stv-cluster-status id="clusterStatus" type="dark" class="cluster-status"></stv-cluster-status>
+            <stv-launcher class="launcher">
+                <i class="fa fa-th"></i>
+            </stv-launcher>
         </stv-header>
         <!--<stv-footer></stv-footer>-->
     </template>
@@ -317,7 +324,7 @@
                 this.$.jobBrowserPanel.hidden = true;
             },
             handleUserNeedRefresh: function() {
-                this.$.jsoHeader.getUserInfo(true);
+                this.$.stvHeader.getUserInfo(true);
             },
             handleSessionManagerHidden: function(e) {
                 var panel = e.detail;
@@ -378,7 +385,9 @@
                         }
                     },
                     callbackExists: function(file) {
-                        alert('File already exists with that name. Please select a different name.');
+                        // alert('File already exists with that name. Please select a different name.');
+                        new StvDialog().prompt('File already exists with that name. Please select a different name.');
+
                     },
                     error: function(msg) {
                         console.log(msg);
