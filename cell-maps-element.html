@@ -126,6 +126,15 @@
             background-color: var(--light-secondary-color);
             padding: 15px 5px 5px 5px;
         }
+
+        .button {
+            color: var(--text-primary-color);
+            background-color: var(--dark-button-color);
+        }
+
+        .button:hover {
+            background-color: var(--light-button-color);
+        }
     </style>
     <template>
         <div class="content" menu-option="job">
@@ -152,7 +161,7 @@
                     <i class="fa fa-folder-o"></i>&nbsp; Browse my analysis data
                 </div>
                 <stv-file-browser id="fileBrowser" class="container flex" on-fileselect="handleFileSelect" bioformats="{{bioformats}}" on-need-refresh="handleUserNeedRefresh" user-data="{{userData}}">
-                    <div class="custom-button stv-btn stv-btn-shdw" file-ext="json.gz" on-click="handleLoadSessionFileBrowser">Load session</div>
+                    <div class="custom-button button stv-btn stv-btn-shdw" file-ext="json.gz" on-click="handleLoadSessionFileBrowser">Load session</div>
                 </stv-file-browser>
             </stv-panel>
 
@@ -368,7 +377,7 @@
                 }
                 var name = this.$.sessionNameInput.value;
                 if (name == '') {
-                    new StvDialog().prompt('Please fill the Session name field.');
+                    new StvDialog().alert('Please fill the Session name field.');
                     return;
                 }
                 var content = pako.gzip(JSON.stringify(this.$.networkViewer));
@@ -389,7 +398,7 @@
                         }
                     },
                     callbackExists: function(file) {
-                        new StvDialog().prompt('File already exists with that name. Please select a different name.');
+                        new StvDialog().alert('File already exists with that name. Please select a different name.');
                     },
                     error: function(msg) {
                         console.log(msg);
