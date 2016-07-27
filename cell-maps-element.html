@@ -121,6 +121,11 @@
             color: var(--accent-color);
             font-weight: normal;
         }
+
+        .save-session-bar {
+            background-color: var(--light-secondary-color);
+            padding: 15px 5px 5px 5px;
+        }
     </style>
     <template>
         <div class="content" menu-option="job">
@@ -155,23 +160,19 @@
                 <div class="header">
                     <i class="fa fa-cloud"></i>&nbsp; Please select a folder to save session...
                 </div>
-                <stv-file-browser id="saveSessionFolder" enable-select-ok class="container" mode="folder" user-data="{{userData}}" on-ok-click="handleSaveClickOk">
-                </stv-file-browser>
-            </stv-panel>
-            <stv-panel id="saveSessionNamePanel" fixed modal hidden closable>
-                <div class="header">
-                    <i class="fa fa-cloud"></i>&nbsp; Session name...
-                </div>
-                <div class="container" style="padding:10px 20px;">
-                    <input id="sessionNameInput" class="stv" type="text" placeholder="Session name">
-                    <div class="horizontal layout center end-justified" style="margin-top:10px;">
+                <div class="container flex">
+                    <stv-file-browser id="saveSessionFolder" bioformats="{{bioformats}}" user-data="{{userData}}" mode="folder">
+                    </stv-file-browser>
+                    <div class="save-session-bar horizontal layout center">
+                        <input id="sessionNameInput" class="stv flex" type="text" placeholder="Session name" required>
                         <div class="stv-btn stv-btn-shdw" style="width:100px; margin:2px;" on-click="handleCancelSessionName">Cancel</div>
                         <div class="stv-btn stv-btn-shdw" style="width:100px; margin:2px;" on-click="handleOkSessionName">OK</div>
                     </div>
                 </div>
+                <!-- <div class="footer"> -->
+                <!-- </div> -->
             </stv-panel>
 
-            </stv-panel>
         </div>
 
         <stv-header id="stvHeader" hide-jobs hide-browse selected-option="{{selectedOption}}" user-data="{{userData}}" on-login="handleLogin" on-logout="handleLogout">
@@ -359,13 +360,17 @@
                     }
                 });
             },
-            handleSaveClickOk: function(e) {
-                this.$.saveSessionNamePanel.show();
-            },
             handleOkSessionName: function(e) {
                 var me = this;
                 var folder = this.$.saveSessionFolder.selectedFile;
+                if (folder == null) {
+                    folder = this.$.saveSessionFolder.folder;
+                }
                 var name = this.$.sessionNameInput.value;
+                if (name == '') {
+                    new StvDialog().prompt('Please fill the Session name field.');
+                    return;
+                }
                 var content = pako.gzip(JSON.stringify(this.$.networkViewer));
                 var blob = new Blob([content], {
                     type: "application/gzip"
@@ -380,14 +385,11 @@
                             me.$.sessionNameInput.value = ''
                             var uploadedFile = response.file;
                             me.$.saveSessionFolderPanel.hide();
-                            me.$.saveSessionNamePanel.hide();
                             me.$.fileBrowserPanel.show();
                         }
                     },
                     callbackExists: function(file) {
-                        // alert('File already exists with that name. Please select a different name.');
                         new StvDialog().prompt('File already exists with that name. Please select a different name.');
-
                     },
                     error: function(msg) {
                         console.log(msg);
@@ -404,7 +406,6 @@
             },
             handleCancelSessionName: function(e) {
                 this.$.saveSessionFolder.reset();
-                this.$.saveSessionNamePanel.hide();
             },
             __iliketomoveit: function() {
                 this.$.networkViewer.setLayout('Force directed (simulation)')

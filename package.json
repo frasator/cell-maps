@@ -11,6 +11,6 @@
     "devDependencies": {
         "async": "^2.0.0-rc.6",
         "shelljs": "^0.7.0",
-        "vulcanize": "1.14.8"
+        "vulcanize": "^1.14.8"
     }
 }
