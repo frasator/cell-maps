@@ -4,12 +4,21 @@
 <link rel="import" href="babelomics-form-behaviour.html">
 <dom-module id="babelomics-network-miner-form">
     <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
-        :host {
+         :host {
             display: block;
             position: relative;
             box-sizing: border-box;
             width: 100%;
         }
+
+        #form {
+            width: 100%;
+        }
+
+        .babel-form-title {
+            text-align: center;
+        }
+
         .footer {
             box-sizing: border-box;
             height: 32px;
@@ -36,34 +45,29 @@
 
             <div class="stv-formbox">
                 <div class="stv-formtitle">Examples</div>
-                <div class="stv-formcontent horizontal layout">
-                    <div class="vertical layout">
-                        <div class="horizontal layout">
-                            <div class="stv-btn stv-btn-shdw" on-click="loadExample1" style="width: 340px">Essential genes in cancer cell line K562 </div>
-                            <div class="stv-btn stv-btn-shdw" on-click="handleDownloadFile" data-example="K562.txt">
-                                <i class="fa fa-download"></i>
-                            </div>
-                        </div>
-                        <div class="horizontal layout" style="margin-top:5px">
-                            <div class="stv-btn stv-btn-shdw" on-click="loadExample2" style="width: 340px">Essential genes in cancer cell line JURKAT </div>
-                            <div class="stv-btn stv-btn-shdw" on-click="handleDownloadFile" data-example="JURKAT.txt">
-                                <i class="fa fa-download"></i>
-                            </div>
+                <div class="stv-formcontent" class="vertical layout">
+                    <div class="horizontal layout">
+                        <div class="stv-btn stv-btn-shdw" on-click="loadExample1" style="width: 340px">Essential genes in cancer cell line K562 </div>
+                        <div class="stv-btn stv-btn-shdw" on-click="handleDownloadFile" data-example="K562.txt">
+                            <i class="fa fa-download"></i>
                         </div>
                     </div>
-                    <div class="vertical layout">
-                        <div style="margin-left:5px" class="horizontal layout">
-                            <div class="stv-btn stv-btn-shdw" on-click="loadExample4" style="width: 340px">Genes Down-regulated in Fanconi Anemia </div>
-                            <div class="stv-btn stv-btn-shdw" on-click="handleDownloadFile" data-example="FA-differentialExpression-statistic.txt">
-                                <i class="fa fa-download"></i>
-                            </div>
+                    <div class="horizontal layout" style="margin-top:5px">
+                        <div class="stv-btn stv-btn-shdw" on-click="loadExample2" style="width: 340px">Essential genes in cancer cell line JURKAT </div>
+                        <div class="stv-btn stv-btn-shdw" on-click="handleDownloadFile" data-example="JURKAT.txt">
+                            <i class="fa fa-download"></i>
                         </div>
-                        <div style="margin-top:5px;margin-left:5px" class="horizontal layout">
-
-                            <div class="stv-btn stv-btn-shdw" on-click="loadExample5" style="width: 340px">Genome-Wide Association Study in Bipolar Disorder </div>
-                            <div class="stv-btn stv-btn-shdw" on-click="handleDownloadFile" data-example="example.zip">
-                                <i class="fa fa-download"></i>
-                            </div>
+                    </div>
+                    <div class="horizontal layout" style="margin-top:5px">
+                        <div class="stv-btn stv-btn-shdw" on-click="loadExample4" style="width: 340px">Genes Down-regulated in Fanconi Anemia </div>
+                        <div class="stv-btn stv-btn-shdw" on-click="handleDownloadFile" data-example="FA-differentialExpression-statistic.txt">
+                            <i class="fa fa-download"></i>
+                        </div>
+                    </div>
+                    <div class="horizontal layout" style="margin-top:5px;">
+                        <div class="stv-btn stv-btn-shdw" on-click="loadExample5" style="width: 340px">Genome-Wide Association Study in Bipolar Disorder </div>
+                        <div class="stv-btn stv-btn-shdw" on-click="handleDownloadFile" data-example="example.zip">
+                            <i class="fa fa-download"></i>
                         </div>
                     </div>
                 </div>
@@ -211,8 +215,14 @@
                     <i class="fa fa-rocket"></i> &nbsp; Launch job
                 </div>
             </div>
+            <br>
         </form>
-        <div class="babel-form-message">{{message}}</div>
+        <div class="footer horizontal layout flex center">
+            <template is="dom-if" if="{{loading}}">
+                <i class="fa fa-spinner fa-spin stv-txt" style="margin-right: 5px;"></i>
+            </template>
+            <span class="stv-txt">{{message}}</span> &nbsp;
+        </div>
     </template>
     <script>
         Polymer({

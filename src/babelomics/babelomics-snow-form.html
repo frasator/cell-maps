@@ -3,19 +3,27 @@
 
 <link rel="import" href="babelomics-form-behaviour.html">
 <dom-module id="babelomics-snow-form">
-
     <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
-        :host {
+         :host {
             display: block;
             position: relative;
             box-sizing: border-box;
             width: 100%;
         }
 
+        #form {
+            width: 100%;
+        }
+
+        .babel-form-title {
+            text-align: center;
+        }
+
         .inputListTextArea {
             width: 300px;
             height: 50px;
         }
+
         .footer {
             box-sizing: border-box;
             height: 32px;
@@ -191,7 +199,6 @@
                 </div>
             </div>
             <br>
-            <br>
         </form>
         <div class="footer horizontal layout flex center">
             <template is="dom-if" if="{{loading}}">
@@ -327,7 +334,7 @@
                                 me.fire('job-launched', job);
                             } else {
                                 me.message = response.response[0].error;
-                            }        
+                            }
                         },
                         error: function() {
 
