@@ -19,6 +19,15 @@
 <link rel="import" href="bower_components/stevia-elements/src/stv-cluster-status.html">
 <link rel="import" href="bower_components/stevia-elements/src/stv-dialog/stv-dialog.html">
 <link rel="import" href="bower_components/stevia-elements/src/stv-launcher/stv-launcher.html">
+<link rel="import" href="bower_components/stevia-elements/src/report/stv-report.html">
+
+
+<link rel="import" href="src/babelomics/babelomics-snow-form.html">
+<link rel="import" href="src/babelomics/babelomics-network-miner-form.html">
+<link rel="import" href="src/babelomics/babelomics-network-miner-plot.html">
+<link rel="import" href="src/babelomics/babelomics-fatigo-form.html">
+<link rel="import" href="src/babelomics/babelomics-go-viewer.html">
+<link rel="import" href="src/babelomics/babelomics-interactome-viewer.html">
 
 <script src="bower_components/network-viewer/conf/config.js"></script>
 <link rel="import" href="bower_components/network-viewer/network-viewer.html">
@@ -28,7 +37,7 @@
 <dom-module id="cell-maps-element">
     <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning"></style>
     <style>
-        :host {
+         :host {
             display: block;
             position: relative;
             cursor: default;
@@ -85,9 +94,11 @@
             min-width: 600px;
             min-height: 400px;
         }
-        /*jso-job-result {
-            min-height: calc(100vh - 60px);
-        }*/
+
+        stv-report {
+            height: calc(100vh - 60px);
+            overflow-y: auto;
+        }
 
         network-viewer {
             height: calc(100vh - 60px);
@@ -135,20 +146,53 @@
         .button:hover {
             background-color: var(--light-button-color);
         }
+
+        .jobform {
+            width: 700px;
+            height: calc(100% - 120px);
+        }
     </style>
     <template>
         <div class="content" menu-option="job">
-            <!-- <jso-job-result id="jobResult" jobItem="{{jobItem}}" on-job-close="handleCloseJobResult" network-viewer="{{networkViewer}}" selected-option="{{selectedOption}}">
-            </jso-job-result> -->
+            <stv-report id="report" on-save-cellmaps-session="handleSaveSessionFromJob"></stv-report>
+            <!-- <babelomics-job-result id="jobResult" jobItem="{{jobItem}}" on-job-close="handleCloseJobResult" network-viewer="{{networkViewer}}" selected-option="{{selectedOption}}">
+            </babelomics-job-result> -->
         </div>
 
 
         <div class="content" menu-option="home">
-            <network-viewer id="networkViewer" user-data="{{userData}}" studies="{{studies}}" selectedStudy="{{selectedStudy}}" projects="{{projects}}" on-need-refresh="handleUserNeedRefresh" on-job-launched="handleJobLaunched" on-session-manager-hidden="handleSessionManagerHidden">
+            <network-viewer id="networkViewer" user-data="{{userData}}" studies="{{studies}}" selectedStudy="{{selectedStudy}}" projects="{{projects}}" on-need-refresh="handleUserNeedRefresh" on-session-manager-hidden="handleSessionManagerHidden" on-snow="handleSnowMenu" on-network-miner="handleNetworkMinerMenu" on-fatigo="handleFatigoMenu" vertex-columns="{{columns}}" vertices="{{vertices}}" selected-vertices="{{selected}}">
             </network-viewer>
+
+            <stv-panel hidden collapsible fixed movable closable id="snowPanel" class="jobform">
+                <div class="header">
+                    Network enrichment form
+                </div>
+                <babelomics-snow-form id="snow" user-data="{{userData}}" allow-network columns="{{columns}}" items="{{vertices}}" selected="{{selected}}" class="container" style="overflow-y:scroll;" on-job-launched="handleJobLaunched">
+                </babelomics-snow-form>
+            </stv-panel>
+
+
+            <stv-panel hidden collapsible fixed movable closable id="networkMinerPanel" class="jobform">
+                <div class="header">
+                    Gene set network enrichment form
+                </div>
+                <babelomics-network-miner-form id="networkMiner" user-data="{{userData}}" allow-network columns="{{columns}}" items="{{vertices}}" selected="{{selected}}" class="container" style="overflow-y:scroll;" on-job-launched="handleJobLaunched">
+                </babelomics-network-miner-form>
+            </stv-panel>
+
+
+            <stv-panel hidden fixed collapsible movable closable id="fatigoPanel" class="jobform">
+                <div class="header">
+                    Single enrichment form
+                </div>
+                <babelomics-fatigo-form id="fatigo" user-data="{{userData}}" allow-network columns="{{columns}}" items="{{vertices}}" selected="{{selected}}" class="container" style="overflow-y:scroll;" on-job-launched="handleJobLaunched">
+                </babelomics-fatigo-form>
+            </stv-panel>
         </div>
 
         <div class="content" menu-option="home,job">
+
             <stv-panel id="jobBrowserPanel" hidden collapsible movable closable on-hidden="handlePanelHidden">
                 <div class="header">
                     <i class="fa fa-flask"></i>&nbsp; Browse my analysis
@@ -165,7 +209,7 @@
                 </stv-file-browser>
             </stv-panel>
 
-            <stv-panel id="saveSessionFolderPanel" fixed modal hidden closable on-hidden="handlePanelHidden">
+            <stv-panel id="saveSessionFolderPanel" modal fixed hidden closable on-hidden="handlePanelHidden">
                 <div class="header">
                     <i class="fa fa-cloud"></i>&nbsp; Please select a folder to save session...
                 </div>
@@ -270,10 +314,27 @@
                 },
                 networkViewer: {
                     type: Object
-                }
+                },
+                columns: {
+                    type: Array
+                },
+                vertices: {
+                    type: Array
+                },
+                selected: {
+                    type: Array
+                },
             },
             ready: function() {
                 var me = this;
+                var jobId = this.getQueryParam('job');
+                if (jobId != null && jobId != "") {
+                    SteviaManager.getJob(jobId, function(job) {
+                        var e = {};
+                        e.detail = job;
+                        me.handleJobSelect(e);
+                    });
+                }
                 // /* Update active panels */
                 // var panels = Polymer.dom(this.root).querySelectorAll('jso-panel');
                 // for (var i = 0; i < panels.length; i++) {
@@ -310,22 +371,27 @@
                 // if (file.index && file.index.status == 'READY') {}
             },
             handleJobSelect: function(e) {
+                var me = this;
                 var job = e.detail;
-                if (job && job.status === 'READY') {
+                if (job && job.status === 'DONE') {
                     this.set('selectedOption', 'job');
-                    this.$.jobResult.set('jobItem', e.detail);
+                    this.$.report.hideJobInformation = true;
+                    this.$.report.set('job', job);
                 }
+            },
+            handleJobLaunched: function(e) {
+                this.$.stvHeader.getUserInfo(true);
+                var job = e.detail;
+                this.$.jobBrowserPanel.show();
+                // e.currentTarget.hide();
             },
             handleCloseJobResult: function(e) {
                 this.set('selectedOption', 'home');
             },
-            handleJobLaunched: function(e) {
-                this.$.jobsPanel.show();
-            },
             handleLogin: function() {
                 this.selectedOption = "home";
                 if (this._lastLogedRequest) {
-                    this._lastLogedRequest.hidden = false;
+                    this._lastLogedRequest.show();
                     this._lastLogedRequest = null;
                 }
             },
@@ -335,15 +401,6 @@
             },
             handleUserNeedRefresh: function() {
                 this.$.stvHeader.getUserInfo(true);
-            },
-            handleSessionManagerHidden: function(e) {
-                var panel = e.detail;
-                var option = Polymer.dom(this.$.menu).querySelector('[title=Sessions]');
-                if (panel.hidden) {
-                    option.removeAttribute('active');
-                } else {
-                    option.setAttribute('active', '');
-                }
             },
             _loadNetworkSessionLocalStorage: function() {
                 if (this.networkViewer.loadLocalStorage()) {
@@ -369,18 +426,28 @@
                     }
                 });
             },
+            handleSaveSessionFromJob: function(e) {
+                if (this.userData != null) {
+                    this.saveSession(e.detail.name, this.userData.home, e.detail.nv);
+                }
+            },
             handleOkSessionName: function(e) {
                 var me = this;
+                var nv = this.$.networkViewer;
+                var name = this.$.sessionNameInput.value;
                 var folder = this.$.saveSessionFolder.selectedFile;
                 if (folder == null) {
                     folder = this.$.saveSessionFolder.folder;
                 }
-                var name = this.$.sessionNameInput.value;
+                this.saveSession(name, folder, nv);
+            },
+            saveSession: function(name, folder, networkViewer) {
+                var me = this;
                 if (name == '') {
                     new StvDialog().alert('Please fill the Session name field.');
                     return;
                 }
-                var content = pako.gzip(JSON.stringify(this.$.networkViewer));
+                var content = pako.gzip(JSON.stringify(networkViewer));
                 var blob = new Blob([content], {
                     type: "application/gzip"
                 });
@@ -405,9 +472,9 @@
                     }
                 };
                 if (folder != null) {
-                    config.parentId = folder._id
+                    config.parentId = folder._id;
                 } else {
-                    config.parentId = this.$.saveSessionFolder.folder._id
+                    config.parentId = this.$.saveSessionFolder.folder._id;
                 }
                 if (name != '') {
                     SteviaManager.files.upload(config);
@@ -416,6 +483,32 @@
             handleCancelSessionName: function(e) {
                 this.$.saveSessionFolder.reset();
             },
+
+            handleSnowMenu: function(e) {
+                if (this.$.stvHeader.isLogged == false) {
+                    this.selectedOption = "login";
+                    this._lastLogedRequest = this.$.snowPanel;
+                } else {
+                    this.$.snowPanel.show();
+                }
+            },
+            handleNetworkMinerMenu: function(e) {
+                if (this.$.stvHeader.isLogged == false) {
+                    this.selectedOption = "login";
+                    this._lastLogedRequest = this.$.networkMinerPanel;
+                } else {
+                    this.$.networkMinerPanel.show();
+                }
+            },
+            handleFatigoMenu: function(e) {
+                if (this.$.stvHeader.isLogged == false) {
+                    this.selectedOption = "login";
+                    this._lastLogedRequest = this.$.fatigoPanel;
+                } else {
+                    this.$.fatigoPanel.show();
+                }
+            },
+
             __iliketomoveit: function() {
                 this.$.networkViewer.setLayout('Force directed (simulation)')
             },

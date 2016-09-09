@@ -1,0 +1,134 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<script src="../../bower_components/network-viewer/conf/config.js"></script>
+<link rel="import" href="../../bower_components/network-viewer/network-viewer.html">
+<dom-module id="babelomics-go-viewer">
+
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning"></style>
+    <style>
+         :host {
+            display: block;
+            position: relative;
+            box-sizing: border-box;
+            background-color: #FFFFFF;
+            height: 100%;
+        }
+
+        network-viewer {
+            /*max-width: 1000px;*/
+            border-color: rgb(217, 217, 217);
+            border-style: solid;
+            border-width: 1px;
+            height: calc(100% - 50px);
+        }
+
+        .button {
+            background-color: var(--dark-button-color) !important;
+            color: var(--text-primary-color) !important;
+        }
+
+        .button:hover {
+            background-color: var(--light-button-color) !important;
+        }
+    </style>
+    <template>
+        <div hidden$="{{!showSave}}" class="horizontal layout" style="margin:5px 0;">
+            <input id="sessionNameInput" style="width:200px;" class="stv" type="text" placeholder="Session name" required>
+            <div class="stv-btn stv-btn-shdw button" style="margin:0 0 0 5px;" on-click="handleSaveSession">
+                Save network as Cell Maps session
+            </div>
+        </div>
+
+        <network-viewer id="networkViewer" lite hide-node-render hide-edge-render mode="move"></network-viewer>
+        <label class="stv">Legend: Colored nodes represent significant results: red for GOs overrepresented and blue for GOs underrepresented in the list 1, whereas white GOs represent the parents of the significant GOs</label>
+        <br>
+        <label class="stv">You can move the canvas using CTRL+CLICK or using the <b>Move</b> mode
+            <i class="fa fa-arrows"></i>
+        </label>
+        <br>
+    </template>
+    networkViewer =
+    <script>
+        Polymer({
+            is: 'babelomics-go-viewer',
+            properties: {
+                pValue: {
+                    type: String
+                },
+                subNetwork: {
+                    type: String
+                },
+                subAttributes: {
+                    type: String
+                },
+                allAttributes: {
+                    type: String
+                },
+                sessionFileNameMap: {
+                    type: Object
+                },
+                showSave: {
+                    type: Boolean,
+                    value: false
+                }
+            },
+            observers: [
+                'filesChanged(subNetwork, subAttributes, sessionFileNameMap)'
+            ],
+            attached: function() {
+                var el = stv.utils.closest(this, 'cell-maps-element');
+                if (el != null) {
+                    this.showSave = true;
+                } else {
+                    this.showSave = false;
+                }
+            },
+            filesChanged: function(subNetwork, subAttributes, sessionFileNameMap) {
+                var me = this;
+                if (subNetwork != null && subNetwork != "" && subAttributes != null && subAttributes != "" && sessionFileNameMap != null) {
+                    this.async(function() {
+                        this.loadFile(subNetwork, function(sif) {
+                            me.loadFile(subAttributes, function(natt) {
+                                me.$.networkViewer.startOver();
+                                me.$.networkViewer.loadText(sif, 0, 1, -1, "r");
+                                me.$.networkViewer.loadNodeAttributes(natt, false);
+                                me._applyVertexAttributes();
+                            });
+                        });
+                    }, 100)
+                }
+            },
+            loadFile: function(filePath, cb) {
+                SteviaManager.getFileContent(this.sessionFileNameMap[filePath]._id, function(content) {
+                    cb(content);
+                });
+            },
+            _applyVertexAttributes: function() {
+                this.$.networkViewer.setVertexDefaultLabelAttribute('name');
+
+                var nodeRender = this.$.networkViewer.$.nodeRender;
+
+                //attributeName, displayProperty
+                nodeRender.applyDirect("color", "color");
+                this.$.networkViewer.setVertexDefaultDisplayProperty("size", -1);
+                this.$.networkViewer.setVertexDefaultDisplayProperty("labelSize", 16);
+                this.$.networkViewer.setVertexDefaultDisplayProperty("shape", "rectangle");
+
+                this.$.networkViewer.setVertexDefaultPositionX("x", false, false);
+                this.$.networkViewer.setVertexDefaultPositionY("y", false, true);
+
+                // this.$.networkViewer.adjustShapeToText();
+            },
+            handleSaveSession: function(e) {
+                var name = this.$.sessionNameInput.value;
+                if (name != '') {
+                    this.fire('save-cellmaps-session', {
+                        name: name,
+                        nv: this.$.networkViewer
+                    });
+                }
+            }
+        })
+    </script>
+</dom-module>

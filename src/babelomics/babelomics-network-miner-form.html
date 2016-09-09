@@ -1,0 +1,477 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="babelomics-form-behaviour.html">
+<dom-module id="babelomics-network-miner-form">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+        :host {
+            display: block;
+            position: relative;
+            box-sizing: border-box;
+            width: 100%;
+        }
+        .footer {
+            box-sizing: border-box;
+            height: 32px;
+            padding: 0 4px;
+            border-top: 1px solid var(--divider-color);
+            background-color: var(--light-secondary-color);
+        }
+
+        .footer>* {
+            margin-left: 5px;
+        }
+    </style>
+
+    <template>
+        <form id="form" class="babel-form">
+            <div class="babel-form-title">
+                <p>
+                    <strong>Network Miner</strong>
+                    <a target="_blank" href="https://github.com/babelomics/babelomics/wiki/Gene%20Set%20Network%20Enrichment%20(Network%20Miner)?">
+                        <i class="fa fa-question-circle"></i>
+                    </a>
+                </p>
+            </div>
+
+            <div class="stv-formbox">
+                <div class="stv-formtitle">Examples</div>
+                <div class="stv-formcontent horizontal layout">
+                    <div class="vertical layout">
+                        <div class="horizontal layout">
+                            <div class="stv-btn stv-btn-shdw" on-click="loadExample1" style="width: 340px">Essential genes in cancer cell line K562 </div>
+                            <div class="stv-btn stv-btn-shdw" on-click="handleDownloadFile" data-example="K562.txt">
+                                <i class="fa fa-download"></i>
+                            </div>
+                        </div>
+                        <div class="horizontal layout" style="margin-top:5px">
+                            <div class="stv-btn stv-btn-shdw" on-click="loadExample2" style="width: 340px">Essential genes in cancer cell line JURKAT </div>
+                            <div class="stv-btn stv-btn-shdw" on-click="handleDownloadFile" data-example="JURKAT.txt">
+                                <i class="fa fa-download"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="vertical layout">
+                        <div style="margin-left:5px" class="horizontal layout">
+                            <div class="stv-btn stv-btn-shdw" on-click="loadExample4" style="width: 340px">Genes Down-regulated in Fanconi Anemia </div>
+                            <div class="stv-btn stv-btn-shdw" on-click="handleDownloadFile" data-example="FA-differentialExpression-statistic.txt">
+                                <i class="fa fa-download"></i>
+                            </div>
+                        </div>
+                        <div style="margin-top:5px;margin-left:5px" class="horizontal layout">
+
+                            <div class="stv-btn stv-btn-shdw" on-click="loadExample5" style="width: 340px">Genome-Wide Association Study in Bipolar Disorder </div>
+                            <div class="stv-btn stv-btn-shdw" on-click="handleDownloadFile" data-example="example.zip">
+                                <i class="fa fa-download"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stv-formbox">
+                <div class="stv-formtitle">Select your data</div>
+                <div class="stv-formcontent">
+                    <stv-file-origin id="inputFile" selection-mode="file" bioformats="{{inputFile1Bioformats}}" user-data="{{userData}}">
+                    </stv-file-origin>
+                </div>
+            </div>
+            <div class="stv-formbox">
+                <div class="stv-formtitle">Select your seed list (optional)</div>
+                <div class="stv-formcontent">
+                    <stv-file-origin id="seedList" selection-mode="file" bioformats="{{seedListBioformats}}" user-data="{{userData}}">
+                    </stv-file-origin>
+                </div>
+            </div>
+
+            <!--<div class="formbox">-->
+            <!--<div class="formtitle">List nature</div>-->
+            <!--<div class="formcontent">-->
+
+            <!--<select name="listTags" id="listTags" class="fc-combobox" type="text" value="gene">-->
+            <!--<option name="listTags_1" id="listTags_1" class="fc-combobox-item" value="gene" selected="selected">Gene</option>-->
+            <!--<option name="listTags_2" id="listTags_5" class="fc-combobox-item" value="protein">Protein</option>-->
+            <!--<option name="listTags_3" id="listTags_6" class="fc-combobox-item" value="transcript">Transcript-->
+            <!--</option>-->
+            <!--</select>-->
+            <!--</div>-->
+            <!--</div>-->
+
+
+            <div class="stv-formbox">
+                <div class="stv-formtitle">List nature</div>
+                <div class="stv-formcontent">
+                    <div id="typeDiv" class="horizontal layout">
+                        <label class="stv-control">
+                            <input id="type_1" name="type" class="fc-radioitem" type="radio" value="transcript">
+                            <span>Transcripts</span>
+                        </label>
+                        <label class="stv-control">
+                            <input id="type_2" name="type" class="fc-radioitem" type="radio" value="protein" checked>
+                            <span>Proteins</span>
+                        </label>
+                        <label class="stv-control">
+                            <input id="type_3" name="type" class="fc-radioitem" type="radio" value="gene">
+                            <span>Genes</span>
+                        </label>
+
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="stv-formbox">
+                <div class="stv-formtitle">Species</div>
+                <div class="stv-formcontent">
+                    <div class="stv-select" style="width:200px;">
+                        <stv-select name="interactome" id="interactome" class="fc-combobox" type="text" value="hsa">
+                            <stv-option name="interactome_1" id="interactome_1" class="fc-combobox-item" value="ath">Arabidopsis thaliana</stv-option>
+                            <stv-option name="interactome_2" id="interactome_2" class="fc-combobox-item" value="dme">Drosophila melanogaster</stv-option>
+                            <!--<stv-option name="interactome_3" id="interactome_3" class="fc-combobox-item" value="eco">Escherichia coli (K12)</stv-option>-->
+                            <stv-option name="interactome_4" id="interactome_4" class="fc-combobox-item" value="hsa" selected="selected">Homo sapiens</stv-option>
+                            <stv-option name="interactome_5" id="interactome_5" class="fc-combobox-item" value="mmu">Mus musculus</stv-option>
+                            <stv-option name="interactome_6" id="interactome_6" class="fc-combobox-item" value="sce">Saccharomyces cerevisiae</stv-option>
+                        </stv-select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stv-formbox">
+                <div class="stv-formtitle">Select interactome confidence</div>
+                <div id="groupDiv" class="stv-formcontent vertical layout">
+                    <label class="stv-control">
+                        <input id="group_1" name="group" class="fc-radioitem" type="radio" value="all">
+                        <span>All ppis (all protein Protein-Protein Interactions detected experimentally)</span>
+                    </label>
+                    <label class="stv-control">
+                        <input id="group_2" name="group" class="fc-radioitem" type="radio" value="curated" checked="checked">
+                        <span>Curated (Protein-Protein Interactions detected with, at least, two different experimental methods)</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="stv-formbox">
+                <div class="stv-formtitle">Sort ranked list</div>
+                <div class="stv-formcontent">
+                    <div id="orderDiv" class="horizontal layout">
+                        <label class="control">
+                            <input id="order_1" name="order" class="fc-radioitem" type="radio" value="ascending" checked="checked">
+                            <span> Ascending </span>
+                        </label>
+                        <label class="control">
+                            <input id="order_2" name="order" class="fc-radioitem" type="radio" value="descending">
+                            <span>Descending</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stv-formbox">
+                <div class="stv-formtitle">Allow one external intermediate in the subnetwork</div>
+                <div class="stv-formcontent">
+                    <div id="intermediateDiv" class="horizontal layout">
+                        <label class="stv-control">
+                            <input id="intermediate_2" name="intermediate" class="fc-radioitem" type="radio" value="1" checked="checked">
+                            <span> Yes </span>
+                        </label>
+                        <label class="stv-control">
+                            <input id="intermediate_1" name="intermediate" class="fc-radioitem" type="radio" value="0">
+                            <span> No </span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!--<div class="formbox">-->
+            <!--<div class="formtitle">Allow one external intermediate in the subnetwork</div>-->
+            <!--<div class="formcontent">-->
+            <!--<select name="intermediate" id="intermediate" class="fc-combobox" type="text" value="0">-->
+            <!--<option name="intermediate_1" id="intermediate_1" class="fc-combobox-item" value="0"-->
+            <!--selected="selected">0-->
+            <!--</option>-->
+            <!--<option name="intermediate_2" id="intermediate_2" class="fc-combobox-item" value="1">1</option>-->
+            <!--</select>-->
+            <!--</div>-->
+            <!--</div>-->
+            <div class="stv-formbox">
+                <div class="stv-formtitle">Job information</div>
+                <div class="stv-formcontent">
+                    <label class="stv">Output folder</label>
+                    <stv-file-origin id="outdir" selection-mode="folder" bioformats="{{bioformats}}" user-data="{{userData}}">
+                    </stv-file-origin>
+                    <label class="stv">Job name</label>
+                    <input class="stv" type="text" id="jobName" style="width:180px;" value="{{jobName}}" required>
+                    <label class="stv">Description</label>
+                    <textarea class="stv" value="{{description}}" required></textarea>
+                </div>
+            </div>
+
+            <div class="babel-form-botbar horizontal layout center-justified">
+                <div class="stv-btn stv-btn-big stv-btn-shdw" on-click="handleForm">
+                    <i class="fa fa-rocket"></i> &nbsp; Launch job
+                </div>
+            </div>
+        </form>
+        <div class="babel-form-message">{{message}}</div>
+    </template>
+    <script>
+        Polymer({
+            id: 'babelomics-network-miner-form',
+            behaviors: [BabelomicsFormBehavior],
+            properties: {
+                inputFile1Bioformats: {
+                    type: Array,
+                    value: [BIOFORMATS["IDLIST"], BIOFORMATS["IDLIST_RANKED"]]
+                },
+                seedListBioformats: {
+                    type: Array,
+                    value: [BIOFORMATS["IDLIST"]]
+                },
+
+            },
+            ready: function() {
+                this.toolName = "network-miner";
+                this.message = '';
+
+                this.inputFile = ""
+                this.seedList = ""
+
+                this.example = false
+
+                this.interactome = "hsa"
+                this.interactomeText = "Homo sapiens"
+
+                this.significantValue = 0.05
+
+                this.group = "all"
+                this.groupText = "Non curated"
+
+                this.order = "ascending"
+                this.orderText = "Ascending"
+
+                this.intermediate = 1
+                this.intermediateText = "Yes"
+
+            },
+            handleCancel: function() {
+                this.selectedOption = '';
+            },
+            argsChanged: function() {
+                stv.utils.argsParser(this, this.args);
+            },
+            launchJob: function(selectedFolderId) {
+                var me = this;
+
+                if (!this.basicValidationForm()) {
+                    return;
+                }
+
+                var query = this.createQuery();
+                var args = this.createArgs("network-miner.sh");
+
+                // var query = {
+                //     sid: Cookies("bioinfo_sid"),
+                //     studyId: this.selectedStudy.id,
+                //     toolId: this.toolName,
+                //     name: this.jobName,
+                //     description: this.description,
+                //     //                    list: this.$.inputFile.selectedFile.id,
+                //     outdir: this.$.outdir.selectedFile.id,
+                //     "o-name": "result",
+                //     interactome: this.$.interactome.value,
+                //     intermediate: this.$.intermediateDiv.querySelector('input[name="intermediate"]:checked').value,
+                //     group: this.$.groupDiv.querySelector('input[name="group"]:checked').value,
+                //     components: true,
+                //     randoms: 1000,
+                //     order: this.$.orderDiv.querySelector('input[name="order"]:checked').value,
+                //     "significant-value": this.significantValue,
+                //     //                        components: false,
+                //     "list-tags": this.$.typeDiv.querySelector('input[name="type"]:checked').value
+                //         //ranked-list:
+                // };
+
+                this.addTextArg(args, "o-name", "result");
+                this.addTextArg(args, "interactome", this.$.interactome.value);
+                this.addTextArg(args, "intermediate", this.$.intermediateDiv.querySelector('input[name="intermediate"]:checked').value)
+                this.addTextArg(args, "group", this.$.groupDiv.querySelector('input[name="group"]:checked').value);
+                this.addTextArg(args, "components", "true");
+                this.addTextArg(args, "randoms", "1000");
+                this.addTextArg(args, "order", this.$.orderDiv.querySelector('input[name="order"]:checked').value);
+                this.addTextArg(args, "significant-value", "" + this.significantValue);
+                this.addTextArg(args, "list-tags", this.$.typeDiv.querySelector('input[name="type"]:checked').value);
+
+                var mode = this.getMode(this.$.inputFile);
+                this.addFileArg(args, "list", mode, this.$.inputFile.selectedFile._id);
+
+                // if (this.$.inputFile.selectedFile === undefined) {
+                //     alert("Sorry. No input selected. Please select a file.");
+                //     return;
+                // }
+                // if (this.$.inputFile.selectedFile !== undefined) {
+                //     query["list"] = this.$.inputFile.selectedFile.id;
+                // }
+                if (this.$.inputFile.textAreaValue != "") {
+                    // query["list-text"] = this.$.inputFile.textAreaValue.replace(/\n/g, ',');
+                    this.addTextArg(args, "list-text", this.$.inputFile.textAreaValue.replace(/\n/g, ','));
+                }
+
+                if (this.$.seedList.selectedFile !== undefined) {
+                    // query["seedlist"] = this.$.seedList.selectedFile.id;
+                    var mode = this.getMode(this.$.seedList);
+                    this.addFileArg(args, "seedlist", mode, this.$.seedList.selectedFile._id);
+                }
+                if (this.$.seedList.textAreaValue != "") {
+                    // query["seedlist-text"] = this.$.seedList.textAreaValue.replace(/\n/g, ',');
+                    this.addTextArg(args, "seedlist-text", this.$.seedList.textAreaValue.replace(/\n/g, ','));
+                }
+
+                SteviaManager.jobs.create({
+                    query: query,
+                    request: {
+                        method: 'POST',
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(args),
+                        success: function(response) {
+
+                            if (response.response[0].error == null) {
+                                var userId = response.response[0].results[0].user._id;
+                                me.message = userId + ' created';
+                                me.selectedOption = "jobLaunched"
+                            } else {
+                                me.message = response.response[0].error;
+                            }
+                        },
+                        error: function() {
+
+                            var lng = 0;
+                            if (query["seedlist-text"] !== undefined) {
+                                lng = query["seedlist-text"].split(",").length;
+                            }
+                            if (lng > 0) {
+                                alert("Sorry, too many inputs ids, the size is limited due to browser restrictions. \n " +
+                                    "Please upload a file with your ids in order to run the analysis. ");
+                                return;
+
+                            }
+                            me.message = 'Server error, try again later.';
+                        }
+                    }
+                })
+            },
+            loadExample1: function(e) {
+
+                this.jobName = "Essential genes in cancer cell line K562";
+                this.description = "This data comes form a recent study of the gene essentiality in different cancer cells (Luo et al. 2008). Here, genes are ranked according the RIGER, which accounts gene essentiality (K562.txt).";
+                //                this.$.inputFile.selectedFile = {id: "example_K562_symbol.txt", path: "K562_symbol.txt", type:"FILE"};
+                this.$.inputFile.selectedFile = {
+                    _id: "K562.txt",
+                    path: "K562.txt",
+                    value: "K562.txt",
+                    type: "FILE",
+                    _example: true
+                };
+                this.$.type_3.checked = true;
+                this.$.interactome.value = "hsa";
+                this.$.group_2.checked = true;
+                this.$.intermediate_2.checked = true;
+                this.$.order_1.checked = true;
+                //                var exampleFolder = "nm_k562_symbol";
+                //                this.createExampleFolder(exampleFolder);
+
+            },
+            loadExample2: function(e) {
+
+                this.jobName = "Essential genes in cancer cell line JURKAT";
+                this.description = "This data comes form a recent study of the gene essentiality in different cancer cells (Luo et al. 2008). Here, genes are ranked according the RIGER, which accounts gene essentiality (JURKAT.txt).";
+                //                this.$.inputFile.selectedFile = {id: "example_K562_symbol.txt", path: "K562_symbol.txt", type:"FILE"};
+                this.$.inputFile.selectedFile = {
+                    _id: "JURKAT.txt",
+                    path: "JURKAT.txt",
+                    value: "JURKAT.txt",
+                    type: "FILE",
+                    _example: true
+                };
+                this.$.type_3.checked = true;
+                this.$.interactome.value = "hsa";
+                this.$.group_2.checked = true;
+                this.$.intermediate_2.checked = true;
+                this.$.order_1.checked = true;
+                //                var exampleFolder = "nm_jurkat";
+                //                this.createExampleFolder(exampleFolder);
+
+            },
+            loadExample3: function(e) {
+
+                this.jobName = "Genes Up-regulated in Fanconi Anemia";
+                this.description = "Expression data comes form a recent study of the gene expression in Fanconi Anemia (Vanderwerf et al. 2009; GEO:GSE16334).  Differential gene expression of control versus case samples was carried out using the Limma option in Differential expression analysis. Here, genes are ranked according the statistic (FA-differentialExpression-statistic.txt).";
+                this.$.inputFile.selectedFile = {
+                    _id: "FA-differentialExpression-statistic.txt",
+                    path: "FA-differentialExpression-statistic.txt",
+                    value: "FA-differentialExpression-statistic.txt",
+                    type: "FILE",
+                    _example: true
+                };
+                this.$.type_3.checked = true;
+                this.$.interactome.value = "hsa";
+                this.$.group_1.checked = true;
+                this.$.intermediate_2.checked = true;
+                this.$.order_1.checked = true;
+                //                var exampleFolder = "nm_fanconi_up";
+                //                this.createExampleFolder(exampleFolder);
+
+            },
+            loadExample4: function(e) {
+
+                this.jobName = "Genes Down-regulated in Fanconi Anemia";
+                this.description = "Expression data comes form a recent study of the gene expression in Fanconi Anemia (Vanderwerf et al. 2009; GEO:GSE16334).  Differential gene expression of control versus case samples was carried out using the Limma option in Differential expression analysis. Here, genes are ranked according the statistic (FA-differentialExpression-statistic.txt).";
+                this.$.inputFile.selectedFile = {
+                    _id: "FA-differentialExpression-statistic.txt",
+                    path: "FA-differentialExpression-statistic.txt",
+                    value: "FA-differentialExpression-statistic.txt",
+                    type: "FILE",
+                    _example: true
+                };
+                this.$.type_3.checked = true;
+                this.$.interactome.value = "hsa";
+                this.$.group_1.checked = true;
+                this.$.intermediate_2.checked = true;
+                this.$.order_2.checked = true;
+                //                var exampleFolder = "nm_fanconi_down";
+                //                this.createExampleFolder(exampleFolder);
+
+            },
+            loadExample5: function(e) {
+
+                this.jobName = "Genome-Wide Association Study in Bipolar Disorder";
+                this.description = "Genotypic data comes from the Wellcome Trust Case Control Consortium. GWAS was performed using the basic association test of Plink toolset. Here, genes were ranked acording the adjusted p-value (BD-GWASplink.txt). Moreover, genes previously associated with Bipolar Disorder obtained from Uniprot database are used as seed genes (BD-associatedgenesUniprot.txt).";
+                this.$.inputFile.selectedFile = {
+                    _id: "BD-GWASplink_top.txt",
+                    path: "BD-GWASplink_top.txt",
+                    value: "BD-GWASplink_top.txt",
+                    type: "FILE",
+                    _example: true
+                };
+                this.$.seedList.selectedFile = {
+                    _id: "BD-associatedgenesUniprot.txt",
+                    path: "BD-associatedgenesUniprot.txt",
+                    value: "BD-associatedgenesUniprot.txt",
+                    type: "FILE",
+                    _example: true
+                };
+                this.$.type_3.checked = true;
+                this.$.interactome.value = "hsa";
+                this.$.group_2.checked = true;
+
+                this.$.intermediate_2.checked = true;
+                this.$.order_1.checked = true;
+                this.significantValue = 0.06;
+                //                var exampleFolder = "nm_gwas";
+                //                this.createExampleFolder(exampleFolder);
+
+            },
+
+        });
+    </script>
+</dom-module>

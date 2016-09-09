@@ -1,0 +1,143 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<script>
+    BabelomicsFormBehavior = {
+        properties: {
+            jobName: {
+                type: String,
+                value: 'JobName'
+            },
+            toolName: {
+                type: String
+            },
+            description: {
+                type: String,
+                value: 'Job info...'
+            },
+            message: {
+                type: String,
+                value: ""
+            },
+            args: {
+                type: Object,
+                value: function() {
+                    return {};
+                },
+                observer: 'argsChanged'
+            }
+        },
+        checkSelectedFile: function(fileSelector) {
+            return fileSelector.selectedFile !== undefined;
+        },
+        isExampleFile: function(fileSelector) {
+            return fileSelector.selectedFile._example === true;
+        },
+        handleDownloadFile: function(e) {
+            SteviaManager.downloadExampleFile(this.toolName, e.currentTarget.dataset.example);
+        },
+        handleForm: function() {
+            this.message = '';
+            this.launchJob();
+        },
+        basicValidationForm: function() {
+            var validated = true;
+            var msg = "";
+            if (this.$.outdir.selectedFile === undefined) {
+                // msg += "Please select an output folder.\n";
+                // validated = false;
+            }
+            if (this.$.inputFile.selectedFile === undefined || this.$.inputFile.selectedFile.type != "FILE") {
+                msg += "Please select an input file.\n";
+                validated = false;
+            }
+            if (this.$.jobName.value == "") {
+                msg += "Please add a job name.\n";
+                validated = false;
+            }
+            if (!validated) {
+                alert(msg)
+            }
+            return validated;
+        },
+
+        createQuery: function() {
+            var query = {};
+            query.name = this.jobName;
+            query.description = this.description;
+            return query;
+        },
+        createArgs: function(executable) {
+            var args = {};
+            args.tool = this.toolName;
+            args.execution = this.toolName;
+            args.executable = executable;
+            args.options = {};
+
+            args.options["outdir"] = {
+                out: true
+            };
+
+            return args;
+
+        },
+        createJob: function(args, query) {
+            var me = this;
+            SteviaManager.jobs.create({
+                query: query,
+                request: {
+                    method: 'POST',
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(args),
+                    success: function(response) {
+                        if (response.response[0].error == null) {
+                            var userId = response.response[0].results[0].user._id;
+                            me.message = userId + ' created';
+                            me.selectedOption = "jobLaunched";
+                            me.fire('need-refresh');
+                        } else {
+                            me.message = response.response[0].error;
+                        }
+                    },
+                    error: function() {
+                        me.message = 'Server error, try again later.';
+                    }
+                }
+            });
+        },
+        argsChanged: function(neo, old) {
+
+        },
+        getMode: function(scope) {
+            var mode = "id";
+            if (this.checkSelectedFile(scope)) {
+                mode = this.isExampleFile(scope) ? "example" : "id";
+            }
+            return mode;
+        },
+        addFlagArg: function(args, tag) {
+            args.options[tag] = {
+                type: 'flag'
+            }
+        },
+        addTextArg: function(args, tag, value) {
+            args.options[tag] = {
+                type: 'text',
+                value: value
+            }
+        },
+        addFileArg: function(args, tag, mode, value) {
+            args.options[tag] = {
+                type: 'file',
+                mode: mode,
+                value: value
+            }
+        },
+        getContentFile: function(file, callback) {
+            var me = this;
+            SteviaManager.getFileContent(file._id, function(content) {
+                callback(content);
+            });
+        },
+    };
+</script>

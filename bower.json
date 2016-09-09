@@ -27,6 +27,7 @@
         "fontawesome": "*",
         "stevia-elements": "git@gitlab.bioinfo.cipf.es:stevia/stevia-elements.git#develop",
         "network-viewer": "git@gitlab.bioinfo.cipf.es:bioinfo/network-viewer.git#develop",
+        "pathway-viewer": "git@gitlab.bioinfo.cipf.es:bioinfo/pathway-viewer.git#develop",
         "file-saver.js": "~1.20150507.2"
     },
     "devDependencies": {}

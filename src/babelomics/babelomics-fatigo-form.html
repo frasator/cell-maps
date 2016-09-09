@@ -1,0 +1,648 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="babelomics-fatigo-options.html">
+<link rel="import" href="babelomics-form-behaviour.html">
+<dom-module is="babelomics-fatigo-form">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+         :host {
+            display: block;
+            position: relative;
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        #form {
+            width: 100%;
+        }
+
+        #title {
+            text-align: center;
+        }
+
+        .db_options {
+            margin: 5px;
+            border: 1px solid #d3d3d3;
+            padding: 5px
+        }
+
+        .db_options>input {
+            width: 100px;
+        }
+
+        .footer {
+            box-sizing: border-box;
+            height: 32px;
+            padding: 0 4px;
+            border-top: 1px solid var(--divider-color);
+            background-color: var(--light-secondary-color);
+        }
+
+        .footer>* {
+            margin-left: 5px;
+        }
+    </style>
+    <template>
+        <form id="form" class="babel-form">
+            <p id="title" class="babel-form-title">
+                <strong>Fatigo</strong>
+                <a target="_blank" href="https://github.com/babelomics/babelomics/wiki/Single%20Enrichment">
+                    <i class="fa fa-question-circle"></i>
+                </a>
+            </p>
+
+            <div class="stv-formbox">
+                <div class="stv-formtitle">Examples</div>
+                <div class="stv-formcontent">
+                    <div class="stv-btn stv-btn-shdw" style="display:inline-block" on-click="loadExample1" style="width:150px;">motor vs apoptosis</div>
+                    <div class="stv-btn stv-btn-shdw" on-click="handleDownloadFile" data-example="example.zip" style="display:inline-block">
+                        <i class="fa fa-download"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stv-formbox">
+                <div class="stv-formtitle">Define your comparison</div>
+                <div class="stv-formcontent">
+                    <label class="stv-control">
+                        <input type="radio" name="comparisonRadio" value="list2list" on-click="comparisonChange" checked>
+                        <span>Id list vs Id list</span>
+                    </label>
+                    <label class="stv-control">
+                        <input type="radio" name="comparisonRadio" value="list2genome" on-click="comparisonChange">
+                        <span>Id List vs Rest of genome</span>
+                    </label>
+                    <label class="stv-control">
+                        <input type="radio" name="comparisonRadio" value="list2rest" on-click="comparisonChange">
+                        <span>Id List vs Rest of ids contained in your annotations (complementary list)</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="stv-formbox">
+                <div class="stv-formtitle">Select your input data</div>
+                <div class="stv-formcontent">
+                    <stv-file-origin id="inputFile" selection-mode="file" bioformats="{{inputFile1Bioformats}}" user-data="{{userData}}" allow-text-area allow-network="{{allowNetwork}}" columns="{{columns}}" items="{{items}}" selected="{{selected}}">
+                    </stv-file-origin>
+                </div>
+            </div>
+
+            <div class="stv-formbox">
+                <div class="stv-formtitle">List 2</div>
+                <div class="stv-formcontent">
+                    <div id="option1">
+                        <stv-file-origin id="inputFile2" selection-mode="file" allow-text-area bioformats="{{inputFile2Bioformats}}" user-data="{{userData}}" allow-network columns="{{columns}}" items="{{items}}" selected="{{selected}}">
+                        </stv-file-origin>
+                    </div>
+                    <div id="option2" hidden>
+                        <span>Rest of the genome</span>
+                    </div>
+
+                    <div id="option3" hidden>
+                        <span>Rest of ids contained in your annotations (complementary list)</span>
+                    </div>
+                </div>
+            </div>
+            <div class="stv-formbox">
+                <div class="stv-formtitle">Options</div>
+                <div id="options" class="stv-formcontent">
+                    <label class="stv">Fisher exact test:</label>
+
+                    <stv-select name="fisher" id="fisher" type="text" value="two-tailed" style="width: 400px">
+                        <stv-option name="fisher_1" id="fisher_1" value="two-tailed">Two tailed </stv-option>
+                        <stv-option name="fisher_2" id="fisher_2" value="greater"> Over-represented terms in list 1 (genome comparison) </stv-option>
+                        <stv-option name="fisher_3" id="fisher_3" value="less">Over-represented terms in list 2 </stv-option>
+                    </stv-select>
+                    <label class="stv">Remove duplicates:</label>
+
+                    <stv-select name="duplicates" id="duplicates" type="text" value="never" style="width: 400px">
+                        <stv-option name="duplicates_1" id="duplicates_1" value="never"> Never </stv-option>
+                        <stv-option name="duplicates_2" id="duplicates_2" value="each"> Remove on each list separately </stv-option>
+                        <stv-option name="duplicates_3" id="duplicates_3" value="all"> Remove on each list and common ids </stv-option>
+                        <stv-option name="duplicates_4" id="duplicates_4" value="ref"> Remove from list2 those appearing in list1 (complementary list)</stv-option>
+                    </stv-select>
+                    <br>
+                    <label class="stv">Significance level (p-value):</label>
+                    <label class="stv-control">
+                        <input type="radio" name="pvalueRadio" value="0.05" checked>
+                        <span> 95% (0.05) </span>
+                    </label>
+                    <label class="stv-control">
+                        <input type="radio" name="pvalueRadio" value="0.01">
+                        <span> 99% (0.01) </span>
+                    </label>
+                </div>
+            </div>
+            </div>
+            <div class="stv-formbox">
+                <div class="stv-formtitle">Databases</div>
+                <div class="stv-formcontent">
+                    <div id="databases">
+                        <stv-select name="species" id="species" class="fc-combobox" type="text" value="none" on-change="handleSpecies" style="width: 250px">
+                            <stv-option name="species_1" id="species_1" value="none" selected="selected">Select an organism</stv-option>
+                            <!--<option name="species_1" id="species_1" value="none" >Select an organism</option>-->
+                            <stv-option name="species_2" id="species_2" value="hsa">Human (homo sapiens) </stv-option>
+                            <stv-option name="species_3" id="species_3" value="mmu">Mouse (mus musculus) </stv-option>
+                            <stv-option name="species_4" id="species_4" value="rno">Rat (rattus norvegicus) </stv-option>
+                            <stv-option name="species_5" id="species_5" value="dme"> Fruitfly (drosophila melanogaster)</stv-option>
+                            <!--<option name="species_6" id="species_6" value="bta">Cow (bos taurus)</option>-->
+                            <stv-option name="species_7" id="species_7" value="dre"> Zebrafish (danio rerio) </stv-option>
+                            <stv-option name="species_8" id="species_8" value="sce"> Saccharomyces cerevisiae </stv-option>
+                            <stv-option name="species_9" id="species_9" value="cel"> Caenorhabditis elegans </stv-option>
+                            <stv-option name="species_10" id="species_10" value="ath"> Arabidopsis thaliana </stv-option>
+                        </stv-select>
+                        <br>
+
+                        <div>
+                            <div class="horizontal layout">
+                                <label class="stv-control">
+                                    <input name="go_bp" id="go_bp" type="checkbox" value="gobp" on-click="speciemust">
+                                    <span>GO biological process</span>
+                                </label>
+                                <div id="bpOptionsButton" class="stv-btn stv-btn-shdw" on-click="bpOptionsFunction">Show options... </div>
+                            </div>
+                            <babelomics-fatigo-options id="bpOptions" hidden></babelomics-fatigo-options>
+                            <br>
+
+                            <div class="horizontal layout">
+                                <label class="stv-control">
+                                    <input name="go_mf" id="go_mf" type="checkbox" value="gomf" class="go" on-click="speciemust">
+                                    <span>GO molecular function</span>
+                                </label>
+
+                                <div name="mfOptionsButton" id="mfOptionsButton" class="stv-btn" on-click="mfOptionsFunction">Show options...
+                                </div>
+                            </div>
+                            <babelomics-fatigo-options id="mfOptions" hidden></babelomics-fatigo-options>
+                            <br>
+
+                            <div class="horizontal layout">
+                                <label class="stv-control">
+                                    <input name="go_cc" id="go_cc" type="checkbox" value="gocc" class="go" on-click="speciemust">
+                                    <span>GO cellular component</span>
+                                </label>
+
+                                <div name="ccOptionsButton" id="ccOptionsButton" class="stv-btn" on-click="ccOptionsFunction">Show options...
+                                </div>
+                            </div>
+                            <babelomics-fatigo-options id="ccOptions" hidden></babelomics-fatigo-options>
+                            <br>
+
+                            <div class="horizontal layout">
+                                <label class="stv-control">
+                                    <input name="go_slim" id="go_slim" type="checkbox" value="go-slim" class="go" on-click="speciemust">
+                                    <span>GOSlim GOA</span>
+                                </label>
+
+
+                                <div name="go_slimOptionsButton" id="go_slimOptionsButton" class="stv-btn" on-click="slimOptionsFunction">Show options...
+                                </div>
+                            </div>
+                            <babelomics-fatigo-options id="slimOptions" propagation="false" hidden></babelomics-fatigo-options>
+                            <br>
+
+                            <div class="horizontal layout">
+                                <label class="stv-control">
+                                    <input name="interpro" id="interpro" type="checkbox" value="interpro" class="go" on-click="speciemust">
+                                    <span>Interpro</span>
+                                </label>
+
+                                <div name="interproOptionsButton" id="interproOptionsButton" class="stv-btn" on-click="interproOptionsFunction">Show options...
+                                </div>
+                            </div>
+                            <babelomics-fatigo-options id="interproOptions" propagation="false" hidden></babelomics-fatigo-options>
+                            <br>
+
+                            <div class="horizontal layout">
+                                <label class="stv-control">
+                                    <input name="recon" id="recon" type="checkbox" value="recon" class="go" on-click="speciemust">
+                                    <span>Genome-Scale Metabolic Network</span>
+                                </label>
+
+                                <div name="reconOptionsButton" id="reconOptionsButton" class="stv-btn" on-click="reconOptionsFunction">Show options...
+                                </div>
+                            </div>
+                            <babelomics-fatigo-options id="reconOptions" propagation="false" hidden></babelomics-fatigo-options>
+                            <br>
+
+                        </div>
+                    </div>
+                    <div id="your_annotations_div">
+                        <div class="horizontal layout">
+                            <label class="stv-control">
+                                <input name="your_annotations" id="your_annotations" type="checkbox" value="">
+                                <span>Your annotations</span>
+
+                            </label>
+                        </div>
+                        <div style="margin-left: 30px">
+                            <stv-file-origin id="annotationsFile" selection-mode="file" bioformats="{{bioformats}}" user-data="{{userData}}" columns="{{columns}}" items="{{items}}" selected="{{selected}}">
+                            </stv-file-origin>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="stv-formbox">
+                <div class="stv-formtitle">Job information</div>
+                <div class="stv-formcontent">
+                    <label class="stv">Output folder</label>
+                    <stv-file-origin id="outdir" selection-mode="folder" user-data="{{userData}}" on-ok-click="handleOutputClickOk">
+                    </stv-file-origin>
+                    <label class="stv">Job name</label>
+                    <input class="stv" type="text" id="jobName" value="{{jobName}}" required style="width:150px;">
+                    <br>
+                    <label class="stv">Description</label>
+                    <textarea class="stv" value="{{description}}" required></textarea>
+                </div>
+            </div>
+
+            <div class="babel-form-botbar  horizontal layout center-justified">
+                <div class="stv-btn stv-btn-big stv-btn-shdw" on-click="handleForm">
+                    <i class="fa fa-rocket"></i> &nbsp; Launch job
+                </div>
+            </div>
+            </div>
+            <br>
+            <br>
+        </form>
+        <div class="footer horizontal layout flex center">
+            <template is="dom-if" if="{{loading}}">
+                <i class="fa fa-spinner fa-spin stv-txt" style="margin-right: 5px;"></i>
+            </template>
+            <span class="stv-txt">{{message}}</span> &nbsp;
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: "babelomics-fatigo-form",
+            behaviors: [BabelomicsFormBehavior],
+            properties: {
+                mustspecie: {
+                    type: Boolean,
+                    value: false
+                },
+                inputFile1Bioformats: {
+                    type: Array,
+                    value: [BIOFORMATS["IDLIST"]]
+                },
+                inputFile2Bioformats: {
+                    type: Array,
+                    value: [BIOFORMATS["IDLIST"], BIOFORMATS["IDLIST_RANKED"]]
+                },
+
+                // network Viewer
+                allowNetwork: {
+                    type: Boolean,
+                    value: false
+                },
+                columns: {
+                    type: Array
+                },
+                items: {
+                    type: Array
+                },
+                selected: {
+                    type: Array
+                },
+            },
+            ready: function() {
+                this.toolName = "fatigo";
+                this.jobName = "Fatigo Single Enrichment";
+                if (this._parentPanel != null) {
+                    this._parentPanel.addEventListener('close', function() {
+                        me._clean();
+                    });
+                }
+            },
+            argsChanged: function() {
+                stv.utils.argsParser(this, this.args);
+
+                if (this.toolName != undefined && this.args.comparisonRadio !== undefined) {
+                    var radios = this.querySelectorAll('input[name="comparisonRadio"]');
+                    for (var i = 0; i < radios.length; i++) {
+                        var radio = radios[i];
+                        if (radio.value == this.args.comparisonRadio)
+                            radio.checked = true;
+                    }
+                    this.comparisonChange();
+                }
+
+            },
+            disablespecie: function() {
+                var comparison = this.querySelector('input[name="comparisonRadio"]:checked').value;
+                if (comparison == "list2genome" || comparison == "list2list") {
+                    this.$.species.disabled = false;
+                    this.$.go_slim.disabled = false;
+                    this.$.interpro.disabled = false;
+                    this.$.recon.disabled = false;
+                    this.$.go_cc.disabled = false;
+                    this.$.go_mf.disabled = false;
+                    this.$.go_bp.disabled = false;
+                }
+            },
+            speciemust: function() {
+
+                var noexist = true;
+                var g = this.$.databases.querySelectorAll(".go");
+                for (var i = 0; i < g.length; i++) {
+                    if (g[i].checked) {
+                        this.mustspecie = true;
+                        noexist = false;
+                    }
+                }
+                if (noexist == true) {
+                    this.mustspecie = false;
+                }
+            },
+            nocheck: function() {
+                this.mustspecie = false;
+                var g = this.$.databases.querySelectorAll(".go");
+                for (var i = 0; i < g.length; i++) {
+                    g[i].checked = false;
+                }
+            },
+            comparisonChange: function() {
+                this.comparison = Polymer.dom(this.root).querySelector('input[name="comparisonRadio"]:checked').value;
+                this.list2 = false;
+                this.rest = false;
+                this.genome = false;
+                if (this.comparison == "list2list") {
+                    this.$.option1.hidden = false;
+                    this.$.option2.hidden = true;
+                    this.$.option3.hidden = true;
+                    this.$.fisher.disabled = false;
+
+                    this.$.species.disabled = false;
+                    this.$.your_annotations_div.hidden = false;
+                    this.disablespecie();
+
+                    //           this.$.your_annotations.checked = false;
+                    //                    this.$.your_annotations.disabled = false;
+                    //                    this.$.annotationsFile.disabled = false;
+
+                }
+                if (this.comparison == "list2genome") {
+                    this.genome = true;
+                    this.$.option1.hidden = true;
+                    this.$.option2.hidden = false;
+                    this.$.option3.hidden = true;
+                    this.$.fisher.disabled = true;
+
+                    this.$.species.disabled = false;
+                    this.$.your_annotations_div.hidden = true;
+                    this.disablespecie();
+                    //                    this.$.your_annotations.disabled = true;
+                    ////                    this.$.your_annotations.disabled = false;
+                    //                    this.$.annotationsFile.hidden = true;
+
+                }
+                if (this.comparison == "list2rest") {
+                    this.genome = true;
+                    this.$.option1.hidden = true;
+                    this.$.option2.hidden = true;
+                    this.$.option3.hidden = false;
+
+                    this.$.your_annotations_div.hidden = false;
+                    this.$.species.disabled = true;
+                    this.$.go_slim.disabled = true;
+                    this.$.interpro.disabled = true;
+                    this.$.recon.disabled = true;
+                    this.$.go_cc.disabled = true;
+                    this.$.go_mf.disabled = true;
+                    this.$.go_bp.disabled = true;
+                    this.nocheck();
+
+                    //                    this.$.your_annotations.disabled = false;
+                    //                    this.$.annotationsFile.disabled = false;
+                }
+            },
+            handleCancel: function() {
+                this.selectedOption = '';
+            },
+            handleForm: function() {
+                this.message = '';
+                this.launchJob();
+            },
+            launchJob: function() {
+                var me = this
+
+                var query = {};
+                var args = {};
+
+                if (!this.basicValidationForm(this)) {
+                    return;
+                }
+
+                this.comparison = Polymer.dom(this.root).querySelector('input[name="comparisonRadio"]:checked').value;
+                if (this.$.species.value == "none" && this.comparison != "list2rest" && this.mustspecie) {
+                    alert("Sorry. No species selected. Please select one. " + this.mustspecie);
+                    return;
+                }
+
+                var query = this.createQuery();
+                var args = this.createArgs("fatigo.sh")
+
+                this.addTextArg(args, "species", this.$.species.value);
+
+                var pvalue = Polymer.dom(this.root).querySelector('input[name="pvalueRadio"]:checked').value;
+                this.addTextArg(args, "pvalue", pvalue);
+
+                if (this.$.inputFile.selectedFile === undefined && this.$.inputFile.textAreaValue == "") {
+                    alert("Sorry. No input selected. Please select a file or write something in the text area");
+                    return;
+                }
+
+                if (this.$.inputFile.textAreaValue != "") {
+                    this.addTextArg(args, "list1-text", this.$.inputFile.textAreaValue.replace(/\n/g, ','));
+                } else if (this.$.inputFile.selectedFile !== undefined) {
+                    var mode = this.getMode(this.$.inputFile);
+                    this.addFileArg(args, "list1", mode, this.$.inputFile.selectedFile._id);
+                }
+
+                if (this.comparison == "list2list") {
+                    if (this.$.inputFile2.selectedFile === undefined && this.$.inputFile2.textAreaValue == "") {
+                        alert("Sorry. No list 2 selected. Please select a file or write something in the text area");
+                        return;
+                    }
+                    if (this.$.inputFile2.selectedFile !== undefined) {
+                        var mode = this.getMode(this.$.inputFile2);
+                        this.addFileArg(args, "list2", mode, this.$.inputFile2.selectedFile._id);
+                    }
+                    if (this.$.inputFile2.textAreaValue != "") {
+                        this.addTextArg(args, "list2-text", this.$.inputFile2.textAreaValue.replace(/\n/g, ','))
+                    }
+                } else if (this.comparison == "list2genome") {
+                    this.addFlagArg(args, "genome");
+                }
+                //else if (this.comparison == "list2rest") {
+                if (this.$.your_annotations.checked) {
+                    if (this.$.annotationsFile.selectedFile === undefined) {
+                        alert("no annotation file selected")
+                        return;
+                    } else
+                        this.addFileArg(args, "annotations", "id", this.$.annotationsFile.selectedFile._id)
+                }
+                // }
+                if (!this.$.go_bp.checked && !this.$.go_cc.checked && !this.$.go_mf.checked && !this.$.go_slim.checked && !this.$.interpro.checked && !this.$.recon.checked && !this.$.your_annotations.checked) {
+                    alert("Sorry. No database selected. Please select one");
+                    return;
+                }
+                if (this.$.go_bp.checked) {
+                    this.addFlagArg(args, "go-bp");
+                    this.addTextArg(args, "go-bp-min-num-genes", this.$.bpOptions.getMinNumGenes().value);
+                    this.addTextArg(args, "go-bp-max-num-genes", this.$.bpOptions.getMaxNumGenes().value);
+                    this.addTextArg(args, "go-bp-propagation", this.$.bpOptions.getGOPropagationValue());
+                }
+                if (this.$.go_cc.checked) {
+                    this.addFlagArg(args, "go-cc");
+                    this.addTextArg(args, "go-cc-min-num-genes", this.$.ccOptions.getMinNumGenes().value);
+                    this.addTextArg(args, "go-cc-max-num-genes", this.$.ccOptions.getMaxNumGenes().value);
+                    this.addTextArg(args, "go-cc-propagation", this.$.ccOptions.getGOPropagationValue());
+
+                }
+                if (this.$.go_mf.checked) {
+                    this.addFlagArg(args, "go-md");
+                    this.addTextArg(args, "go-md-min-num-genes", this.$.mfOptions.getMinNumGenes().value);
+                    this.addTextArg(args, "go-md-max-num-genes", this.$.mfOptions.getMaxNumGenes().value);
+                    this.addTextArg(args, "go-md-propagation", this.$.mfOptions.getGOPropagationValue());
+                }
+                if (this.$.go_slim.checked) {
+                    this.addFlagArg(args, "go-slim");
+                    this.addTextArg(args, "go-slim-min-num-genes", this.$.slimOptions.getMinNumGenes().value);
+                    this.addTextArg(args, "go-slim-max-num-genes", this.$.slimOptions.getMaxNumGenes().value);
+
+                }
+                if (this.$.interpro.checked) {
+                    this.addFlagArg(args, "interpro");
+                    this.addTextArg(args, "interpro-min-num-genes", this.$.interproOptions.getMinNumGenes().value);
+                    this.addTextArg(args, "interpro-max-num-genes", this.$.interproOptions.getMaxNumGenes().value);
+                }
+                if (this.$.recon.checked) {
+                    this.addFlagArg(args, "recon");
+                    this.addTextArg(args, "recon-min-num-genes", this.$.reconOptions.getMinNumGenes().value);
+                    this.addTextArg(args, "recon-max-num-genes", this.$.reconOptions.getMaxNumGenes().value);
+                }
+
+                SteviaManager.jobs.create({
+                    query: query,
+                    request: {
+                        method: 'POST',
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(args),
+                        success: function(response) {
+                            if (response.response[0].error == null) {
+                                var job = response.response[0].results[0];
+                                me.message = job.name + ' created';
+                                me.fire('job-launched', job);
+                            } else {
+                                me.message = response.response[0].error;
+                            }
+                        },
+                        error: function(a, b, c, d, e) {
+
+                            var lng1, lng2 = 0;
+                            if (query["list1-text"] !== undefined) {
+                                lng1 = query["list1-text"].split(",").length;
+                            }
+                            if (query["list2-text"] !== undefined) {
+                                lng2 = query["list2-text"].split(",").length;
+                            }
+                            var lng = lng1 + lng2;
+                            if (lng > 0) {
+                                alert("Sorry, too many inputs ids, the size is limited due to browser restrictions. \n " +
+                                    "Please upload a file with your ids in order to run the analysis. ");
+                                return;
+
+                            }
+                            me.message = 'Server error, try again later.';
+                        }
+                    }
+                })
+            },
+
+            loadExample1: function(e) {
+                this.$.go_bp.disabled = false;
+                this.$.go_bp.checked = true;
+                this.message = '';
+                this.duplicates = "never";
+                this.go_bp_keyword_operator = "all";
+                this.$.species.value = "hsa";
+                this.go_bp_max_level = 9;
+                this.go_bp = "gobp";
+                this.go_bp_propagation = "propagate";
+                this.go_bp_min_num_genes = 5;
+                this.$.inputFile.selectedFile = {
+                    _id: "example.motor",
+                    value: "example.motor",
+                    path: "example.motor",
+                    type: "FILE",
+                    _example: true
+                };
+                this.$.inputFile2.selectedFile = {
+                    _id: "example.apoptosis",
+                    path: "example.apoptosis",
+                    value: "example.apoptosis",
+                    type: "FILE",
+                    _example: true
+                };
+                this.annotations = "none";
+                this.fisher = "two-tailed";
+                this.go_bp_max_num_genes = 500;
+                this.go_bp_min_level = 3;
+                this.jobName = "motor vs apop";
+                this.mustspecie = true;
+
+                //                var exampleFolder = "fati_motor_apop";
+                //                this.createExampleFolder(exampleFolder);
+
+            },
+            handleSpecies: function(e) {
+                this.species = this.$.species.value;
+                if (this.species == "hsa") {
+                    this.$.go_slim.disabled = false;
+                    this.$.interpro.disabled = false;
+                    this.$.recon.disabled = false;
+
+                }
+                if (this.species == "ath") {
+                    this.$.go_slim.disabled = true;
+                    this.$.interpro.disabled = false;
+                    this.$.recon.disabled = true;
+
+                }
+                if (this.species == "cel") {
+                    this.$.go_slim.disabled = true;
+                    this.$.interpro.disabled = false;
+                    this.$.recon.disabled = true;
+                }
+                if (this.species == "dme" || this.species == "dre" || this.species == "mmu" || this.species == "rno" || this.species == "sce") {
+                    this.$.go_slim.disabled = false;
+                    this.$.interpro.disabled = false;
+                    this.$.recon.disabled = true;
+                }
+
+            },
+            bpOptionsFunction: function(e, b) {
+                this.$.bpOptions.hidden = !this.$.bpOptions.hidden;
+            },
+            ccOptionsFunction: function() {
+                this.$.ccOptions.hidden = !this.$.ccOptions.hidden;
+            },
+            mfOptionsFunction: function() {
+                this.$.mfOptions.hidden = !this.$.mfOptions.hidden;
+            },
+            slimOptionsFunction: function() {
+                this.$.slimOptions.hidden = !this.$.slimOptions.hidden;
+            },
+            interproOptionsFunction: function() {
+                this.$.interproOptions.hidden = !this.$.interproOptions.hidden;
+            },
+            reconOptionsFunction: function() {
+                this.$.reconOptions.hidden = !this.$.reconOptions.hidden;
+            }
+        });
+    </script>
+</dom-module>

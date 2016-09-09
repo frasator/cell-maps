@@ -1,0 +1,437 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="babelomics-form-behaviour.html">
+<dom-module id="babelomics-snow-form">
+
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+        :host {
+            display: block;
+            position: relative;
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        .inputListTextArea {
+            width: 300px;
+            height: 50px;
+        }
+        .footer {
+            box-sizing: border-box;
+            height: 32px;
+            padding: 0 4px;
+            border-top: 1px solid var(--divider-color);
+            background-color: var(--light-secondary-color);
+        }
+
+        .footer>* {
+            margin-left: 5px;
+        }
+    </style>
+
+    <template>
+        <form id="form" class="babel-form">
+            <div class="babel-form-title">
+                <!--<div class="babel-form-title" hidden?="{{hideTitle == 'true'}}">-->
+                <p>
+                    <strong>Snow</strong>
+                    <a target="_blank" href="https://github.com/babelomics/babelomics/wiki/network-enrichment-(snow)">
+                        <i class="fa fa-question-circle"></i>
+                    </a>
+                </p>
+            </div>
+            <div class="stv-formbox">
+                <div class="stv-formtitle">Examples</div>
+                <div class="stv-formcontent">
+                    <div class="stv-btn stv-btn-shdw" style="display:inline-block" on-click="loadExample1">
+                        Downregulated in fibroblasts from old individuals, compared to young
+                    </div>
+                    <div class="stv-btn stv-btn-shdw" on-click="handleDownloadFile" data-example="oldage_dn.txt" style="display:inline-block">
+                        <i class="fa fa-download"></i>
+                    </div>
+                    <br>
+                    <div class="stv-btn stv-btn-shdw" style="display:inline-block;margin-top:5px;" on-click="loadExample2">
+                        Upregulated by induction of exogenous BRCA1 in EcR-293 cells
+                    </div>
+                    <div class="stv-btn stv-btn-shdw" on-click="handleDownloadFile" data-example="brca1_overexp_up.txt" style="display:inline-block">
+                        <i class="fa fa-download"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="stv-formbox">
+                <div class="stv-formtitle">Define your input data</div>
+                <div class="stv-formcontent horizontal layout">
+                    <label class="stv-control">
+                        <input id="mode_1" name="mode" class="fc-radioitem" type="radio" value="one_list" checked="checked" on-click="modeChanged">
+                        <span>One list</span>
+                    </label>
+                    <label class="stv-control">
+                        <input id="mode_2" name="mode" class="fc-radioitem" type="radio" value="two_list" on-click="modeChanged">
+                        <span>Comparing two lists</span>
+                    </label>
+                </div>
+            </div>
+            <div class="stv-formbox">
+                <div class="stv-formtitle">Select your input files</div>
+                <div class="stv-formcontent">
+                    List 1:
+                    <!--<jso-project-browser-window id="inputFile" studies="{{studies}}" selectedStudy="{{selectedStudy}}" selectionMode="file" allowTextArea="true" on-file-select="{{handleFileSelect}}" bioformat="IDLIST" networkViewer="{{networkViewer}}"></jso-project-browser-window>-->
+                    <stv-file-origin id="inputFile" selection-mode="file" bioformats="{{inputFile1Bioformats}}" user-data="{{userData}}" allow-text-area>
+                    </stv-file-origin>
+                    <div id="list2Div" hidden>
+                        <br> List 2:
+                        <stv-file-origin id="inputFile2" selection-mode="file" bioformats="{{inputFile1Bioformats}}" user-data="{{userData}}" allow-text-area>
+                        </stv-file-origin>
+                        <!--<jso-project-browser-window id="inputFile2" studies="{{studies}}" selectedStudy="{{selectedStudy}}" selectionMode="file" allowTextArea="true" on-file-select="{{handleFileSelect}}" bioformat="IDLIST" networkViewer="{{networkViewer}}"></jso-project-browser-window>-->
+                    </div>
+                </div>
+            </div>
+
+            <div class="stv-formbox">
+                <div class="stv-formtitle">List nature</div>
+                <div class="stv-formcontent">
+                    <div id="typeDiv" class="horizontal layout">
+                        <label class="stv-control">
+                            <input id="type_1" name="type" class="fc-radioitem" type="radio" value="transcripts">
+                            <span>Transcripts</span>
+                        </label>
+                        <label class="stv-control">
+                            <input id="type_2" name="type" class="fc-radioitem" type="radio" value="proteins" checked>
+                            <span>Proteins</span>
+                        </label>
+                        <label class="stv-control">
+                            <input id="type_3" name="type" class="fc-radioitem" type="radio" value="genes">
+                            <span>Genes</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stv-formbox">
+                <div class="stv-formtitle">Species</div>
+                <div class="stv-formcontent">
+                    <div id="interactomeDiv">
+                        <div class="stv-select" style="width:200px;">
+                            <stv-select name="interactome" id="interactome" class="fc-combobox" type="text" value="hsa">
+                                <stv-option name="interactome_1" id="interactome_1" class="fc-combobox-item" value="hsa" selected="selected">Homo sapiens</stv-option>
+                                <stv-option name="interactome_2" id="interactome_2" class="fc-combobox-item" value="mmu">Mus musculus</stv-option>
+                                <stv-option name="interactome_3" id="interactome_3" class="fc-combobox-item" value="dme">Drosophila melanogaster</stv-option>
+                                <stv-option name="interactome_4" id="interactome_4" class="fc-combobox-item" value="sce">Saccharomyces cerevisiae</stv-option>
+                                <stv-option name="interactome_5" id="interactome_5" class="fc-combobox-item" value="ath">Arabidopsis thaliana</stv-option>
+                                <!--<option name="interactome_6" id="interactome_6" class="fc-combobox-item" value="eco">Escherichia coli (K12)</option>-->
+                                <!--<option name="interactome_7" id="interactome_7" class="fc-combobox-item" value="own">Own</option>-->
+                            </stv-select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="stv-formbox">
+                <div class="stv-formtitle">Select interactome confidence</div>
+                <div class="stv-formcontent">
+                    <div id="groupDiv" class="vertical layout">
+                        <label class="stv-control">
+                            <input id="group_1" name="group" class="fc-radioitem" type="radio" value="all" checked="checked">
+                            <span>All ppis (all protein Protein-Protein Interactions detected experimentally)</span>
+                        </label>
+                        <label class="stv-control">
+                            <input id="group_2" name="group" class="fc-radioitem" type="radio" value="curated" checked="checked">
+                            <span>Curated (Protein-Protein Interactions detected with, at least, two different experimental methods)</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="stv-formbox">
+                <div class="stv-formtitle">Side for statistical tests</div>
+                <div class="stv-formcontent">
+                    <div id="sideDiv" class="horizontal layout">
+                        <label class="stv-control">
+                            <input id="side_1" name="side" class="fc-radioitem" type="radio" value="greater" checked="checked">
+                            <span>Greater</span>
+                        </label>
+                        <label class="stv-control">
+                            <input id="side_2" name="side" class="fc-radioitem" type="radio" value="less">
+                            <span>Less</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="stv-formbox">
+                <div class="stv-formtitle">Allow one external intermediate in the subnetwork</div>
+                <div class="stv-formcontent">
+                    <div id="intermediateDiv" class="horizontal layout">
+                        <label class="stv-control">
+                            <input id="intermediate_2" name="intermediate" class="fc-radioitem" type="radio" value="1" checked="checked">
+                            <span>Yes</span>
+                        </label>
+                        <label class="stv-control">
+                            <input id="intermediate_1" name="intermediate" class="fc-radioitem" type="radio" value="0">
+                            <span>No</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stv-formbox">
+                <div class="stv-formtitle">Job information</div>
+                <div class="stv-formcontent">
+                    <label class="stv">Output folder</label>
+                    <!--<jso-project-browser-window id="outdir" studies="{{studies}}" selectedStudy="{{selectedStudy}}" selectionMode="folder" selectedFolder="analysis" showBrowser="false"></jso-project-browser-window>-->
+                    <stv-file-origin id="outdir" selection-mode="folder" bioformats="{{bioformats}}" user-data="{{userData}}">
+                    </stv-file-origin>
+                    <label class="stv">Job name</label>
+                    <input class="stv" type="text" id="jobName" value="{{jobName}}" required style="width:150px;">
+                    <label class="stv">Description</label>
+                    <textarea class="stv" value="{{description}}" required></textarea>
+                </div>
+            </div>
+
+            <div class="babel-form-botbar horizontal layout center-justified">
+                <div class="stv-btn stv-btn-big stv-btn-shdw" on-click="handleForm">
+                    <i class="fa fa-rocket"></i> &nbsp; Launch job
+                </div>
+            </div>
+            <br>
+            <br>
+        </form>
+        <div class="footer horizontal layout flex center">
+            <template is="dom-if" if="{{loading}}">
+                <i class="fa fa-spinner fa-spin stv-txt" style="margin-right: 5px;"></i>
+            </template>
+            <span class="stv-txt">{{message}}</span> &nbsp;
+        </div>
+    </template>
+    <script>
+        Polymer({
+            id: 'babelomics-snow-form',
+            behaviors: [BabelomicsFormBehavior],
+            properties: {
+                mustspecie: {
+                    type: Boolean,
+                    value: false
+                },
+                inputFile1Bioformats: {
+                    type: Array,
+                    value: [BIOFORMATS["IDLIST"]]
+                },
+            },
+            ready: function() {
+                this.message = '';
+
+                /** Default values **/
+                this.toolName = "snow";
+                this.type = "genes";
+                this.randoms = 500;
+            },
+            argsChanged: function() {
+                if (this.toolName != undefined && this.toolName == this.args.tool) {
+                    Utils.argsParser(this, this.args);
+                    if (this.args.mode !== undefined) {
+                        var radios = this.shadowRoot.querySelectorAll('input[name="mode"]');
+                        for (var i = 0; i < radios.length; i++) {
+                            var radio = radios[i];
+                            if (radio.value == this.args.mode)
+                                radio.checked = true;
+                        }
+                        this.modeChanged();
+                    }
+                }
+            },
+            handleCancel: function() {
+                this.selectedOption = '';
+            },
+            launchJob: function() {
+                var me = this;
+                if (!this.basicValidationForm(this)) {
+                    return;
+
+                }
+
+                var query = this.createQuery();
+                var args = this.createArgs("snow.sh");
+
+                // var query = {
+                //     sid: Cookies("bioinfo_sid"),
+                //     studyId: this.selectedStudy.id,
+                //     toolId: this.toolName,
+                //     name: this.jobName,
+                //     description: this.description,
+                //     //                    list1: this.$.inputFile.selectedFile.id,
+                //     outdir: this.$.outdir.selectedFile.id,
+                //     "o-name": "result",
+                //     interactome: this.$.interactome.value,
+                //     intermediate: this.$.intermediateDiv.querySelector('input[name="intermediate"]:checked').value,
+                //     type: this.$.typeDiv.querySelector('input[name="type"]:checked').value,
+                //     group: this.$.groupDiv.querySelector('input[name="group"]:checked').value,
+                //     components: true,
+                //     randoms: this.randoms,
+                //     side: this.$.sideDiv.querySelector('input[name="side"]:checked').value,
+                //     images: "",
+                //     json: 1
+                // };
+
+                this.addTextArg(args, "o-name", "result");
+                this.addTextArg(args, "interactome", this.$.interactome.value);
+                this.addTextArg(args, "intermediate", this.$.intermediateDiv.querySelector('input[name="intermediate"]:checked').value)
+                this.addTextArg(args, "type", this.$.typeDiv.querySelector('input[name="type"]:checked').value);
+                this.addTextArg(args, "group", this.$.groupDiv.querySelector('input[name="group"]:checked').value);
+                this.addTextArg(args, "components", "true");
+                this.addTextArg(args, "randoms", "" + this.randoms);
+                this.addTextArg(args, "side", this.$.sideDiv.querySelector('input[name="side"]:checked').value);
+                this.addFlagArg(args, "images");
+                this.addTextArg(args, "json", "1");
+
+                if (this.$.inputFile.selectedFile === undefined && this.$.inputFile.textAreaValue == "") {
+                    alert("Sorry. No input selected. Please select a file or write something in the text area");
+                    return;
+                }
+                if (this.$.inputFile.selectedFile !== undefined) {
+                    // query["list1"] = this.$.inputFile.selectedFile.id;
+                    var mode = this.getMode(this.$.inputFile);
+                    this.addFileArg(args, "list1", mode, this.$.inputFile.selectedFile._id);
+                }
+                if (this.$.inputFile.textAreaValue != "") {
+                    // query["list1-text"] = this.$.inputFile.textAreaValue.replace(/\n/g, ',');
+                    this.addTextArg(args, "list1-text", this.$.inputFile.textAreaValue.replace(/\n/g, ','));
+                }
+
+                if (this.$.mode_2.checked) {
+                    // delete query["randoms"];
+                    delete args.options["randoms"];
+                    if (this.$.inputFile2.selectedFile === undefined && this.$.inputFile2.textAreaValue == "") {
+                        alert("Error: You are comparing two list and only the first one is selected. We are missing the second one");
+                        return;
+                    }
+                    if (this.$.inputFile2.selectedFile !== undefined) {
+                        // query["list2"] = this.$.inputFile2.selectedFile.id;
+                        var mode = this.getMode(this.$.inputFile2);
+                        this.addFileArg(args, "list2", mode, this.$.inputFile2.selectedFile._id);
+                    }
+                    if (this.$.inputFile2.textAreaValue != "") {
+                        // query["list2-text"] = this.$.inputFile2.textAreaValue.replace(/\n/g, ',');
+                        this.addTextArg(args, "list2-text", this.$.inputFile2.textAreaValue.replace(/\n/g, ','))
+                    }
+                }
+
+                SteviaManager.jobs.create({
+                    query: query,
+                    request: {
+                        method: 'POST',
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(args),
+                        success: function(response) {
+                            if (response.response[0].error == null) {
+                                var job = response.response[0].results[0];
+                                me.message = job.name + ' created';
+                                me.fire('job-launched', job);
+                            } else {
+                                me.message = response.response[0].error;
+                            }        
+                        },
+                        error: function() {
+
+                            var lng1, lng2 = 0;
+                            if (query["list1-text"] !== undefined) {
+                                lng1 = query["list1-text"].split(",").length;
+                            }
+                            if (query["list2-text"] !== undefined) {
+                                lng2 = query["list2-text"].split(",").length;
+                            }
+                            var lng = lng1 + lng2;
+                            if (lng > 0) {
+                                alert("Sorry, too many inputs ids, the size is limited due to browser restrictions. \n " +
+                                    "Please upload a file with your ids in order to run the analysis. ");
+                                return;
+
+                            }
+                            me.message = 'Server error, try again later.';
+                        }
+                    }
+                })
+            },
+            loadExample1: function(e) {
+                this.message = '';
+                this.jobName = "Downregulated";
+                this.description = "Downregulated in fibroblasts from old individuals, compared to young";
+                this.$.inputFile.selectedFile = {
+                    _id: "oldage_dn.txt",
+                    path: "oldage_dn.txt",
+                    value: "oldage_dn.txt",
+                    type: "FILE",
+                    _example: true
+                };
+                this.$.interactome.value = "hsa";
+                this.$.type_3.checked = true;
+                this.$.side_1.checked = true;
+                this.$.group_2.checked = true;
+                //                this.$.randoms.value = 500;
+                //                this.$.intermediate.value = 1;
+                this.$.intermediate_2.checked = true;
+                //                var exampleFolder = "snow_downregulated";
+                //                this.createExampleFolder(exampleFolder);
+
+            },
+            loadExample2: function(e) {
+                this.message = '';
+                this.jobName = "Upregulated by induction of exogenous BRCA1 in EcR-293 cells";
+                this.description = "";
+
+                if (this.$.mode_2.checked) {
+                    this.$.inputFile2.selectedFile = {
+                        _id: "brca1_overexp_up.txt",
+                        path: "brca1_overexp_up.txt",
+                        value: "brca1_overexp_up.txt",
+                        type: "FILE",
+                        _example: true
+                    };
+                } else {
+                    this.$.inputFile.selectedFile = {
+                        _id: "brca1_overexp_up.txt",
+                        path: "brca1_overexp_up.txt",
+                        value: "brca1_overexp_up.txt",
+                        type: "FILE",
+                        _example: true
+                    };
+                }
+                this.$.interactome.value = "hsa";
+                this.$.type_3.checked = true;
+                this.$.side_1.checked = true;
+                this.$.group_2.checked = true;
+                //                this.$.randoms.value = 500;
+                //                this.$.intermediate.value = 1;
+                this.$.intermediate_1.checked = true;
+                //                var exampleFolder = "snow_Upregulated";
+                //                this.createExampleFolder(exampleFolder);
+
+            },
+            handleType: function(e) {
+                this.type = e.target.dataset.value;
+                this.typeText = e.target.innerText;
+            },
+            handleInteractome: function(e) {
+                this.interactome = e.target.dataset.value;
+                this.interactomeText = e.target.innerText;
+            },
+            handleGroup: function(e) {
+                this.group = e.target.dataset.value;
+                this.groupText = e.target.innerText;
+            },
+            handleIntermediate: function(e) {
+                this.intermediate = e.target.dataset.value;
+                this.intermediateText = e.target.innerText;
+            },
+            handleRandoms: function(e) {
+                this.randoms = e.target.dataset.value;
+            },
+            modeChanged: function(e) {
+                if (this.$.mode_1.checked)
+                    this.$.list2Div.hidden = true;
+                else
+                    this.$.list2Div.hidden = false;
+
+            }
+
+        });
+    </script>
+</dom-module>
