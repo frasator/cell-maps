@@ -18,6 +18,6 @@ STEVIA_SERVER_HOST = 'http://ws.babelomics.org/stv01';
 // STEVIA_SERVER_HOST = 'http://stvtest.babelomics.org';
 // STEVIA_SERVER_HOST = 'http://localhost:5555';
 
-STEVIA_SHOW_JOB_ERROR_FILES = true;
+STEVIA_SHOW_JOB_ERROR_FILES = false;
 UPLOAD_FILES_WITH_ERRORS = true;
-STEVIA_SHOW_HIDDEN_FILES = true;
+STEVIA_SHOW_HIDDEN_FILES = false;
