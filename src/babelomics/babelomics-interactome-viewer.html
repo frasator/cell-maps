@@ -1,0 +1,233 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<script src="../../bower_components/network-viewer/conf/config.js"></script>
+<link rel="import" href="../../bower_components/network-viewer/network-viewer.html">
+
+<dom-module id="babelomics-interactome-viewer">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+         :host {
+            display: block;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        network-viewer {
+            /*max-width: 1000px;*/
+            border-color: rgb(217, 217, 217);
+            border-style: solid;
+            border-width: 1px;
+            height: calc(100% - 50px);
+        }
+
+        .button {
+            background-color: var(--dark-button-color) !important;
+            color: var(--text-primary-color) !important;
+        }
+
+        .button:hover {
+            background-color: var(--light-button-color) !important;
+        }
+    </style>
+    <template>
+        <div hidden$="{{!showSave}}" class="horizontal layout" style="margin:5px 0;">
+            <input id="sessionNameInput" style="width:200px;" class="stv" type="text" placeholder="Session name" required>
+            <div class="stv-btn stv-btn-shdw button" style="margin:0 0 0 5px;" on-click="handleSaveSession">
+                Save network as Cell Maps session
+            </div>
+        </div>
+
+        <network-viewer id="networkViewer" lite hide-node-render hide-edge-render mode="move"></network-viewer>
+        <label class="stv">
+            Legend: nodes from your list are rounded and coloured in dark grey, whereas the external nodes added as intermediate are squares with light grey color.
+            <span hidden$="{{seedsExists(seeds)}}">
+                Nodes in ellipse shape are from the seed list.
+            </span>
+        </label>
+        <br>
+        <label class="stv">You can move the canvas using CTRL+CLICK or using the <b>Move</b> mode
+            <i class="fa fa-arrows"></i>
+        </label>
+
+    </template>
+    <script>
+        Polymer({
+            is: "babelomics-interactome-viewer",
+            properties: {
+                network: {
+                    type: String,
+                },
+                intermediates: {
+                    type: String,
+                },
+                seeds: {
+                    type: String,
+                },
+
+                sessionFileNameMap: {
+                    type: Object
+                },
+                showSave: {
+                    type: Boolean,
+                    value: false
+                }
+            },
+            observers: [
+                'filesChanged(network, sessionFileNameMap)'
+            ],
+            attached: function() {
+                var el = stv.utils.closest(this, 'cell-maps-element');
+                if (el != null) {
+                    this.showSave = true;
+                } else {
+                    this.showSave = false;
+                }
+            },
+            seedsExists: function(seeds) {
+                if (this.seeds == "" || this.seeds == null) {
+                    return false;
+                }
+                return true
+            },
+            filesChanged: function(network, sessionFileNameMap) {
+                var me = this;
+                if (network != null && network != "" && sessionFileNameMap != null) {
+                    this.async(function() {
+                        this.loadFile(network, function(sif) {
+                            me.$.networkViewer.startOver();
+                            me.$.networkViewer.loadSif(sif);
+                            me.$.networkViewer.setLayout("Force directed");
+                            me.$.networkViewer.setVertexDefaultDisplayProperty("color", "#c0c0c0")
+                            me.$.networkViewer.setEdgeDefaultDisplayProperty("shape", "undirected")
+
+                            var intermediates = me.intermediates.split("|");
+                            var seeds = me.seeds.split("|");
+
+                            for (var i = 0; i < intermediates.length; i++) {
+                                var intermediate = intermediates[i];
+                                var vertex = me.$.networkViewer.graph.getVertexById(intermediate);
+                                if (vertex == null)
+                                    continue;
+                                vertex.renderer.set("shape", "square");
+                                vertex.renderer.set("width", 20);
+                                vertex.renderer.set("color", "#eaeaea");
+                            }
+                            for (var i = 0; i < me.seeds.length; i++) {
+                                var seed = me.seeds[i];
+                                var vertex = me.$.networkViewer.graph.getVertexById(seed);
+                                if (vertex == null)
+                                    continue;
+                                vertex.renderer.set("shape", "ellipse");
+                                vertex.renderer.set("width", 30);
+                                vertex.renderer.set("height", 20);
+                                vertex.renderer.set("color", "#c0c0c0");
+                            }
+
+                            // TODO  interactors file???
+                            var fileName = "";
+                            for (var name in me.sessionFileNameMap) {
+                                fileName = name;
+                                if (name.indexOf("interactors") != -1) {
+                                    break;
+                                }
+                            }
+                            if (fileName != "") {
+                                me.loadFile(fileName, function(natt) {
+                                    me.$.networkViewer.loadNodeAttributes(natt, false);
+                                });
+
+                                // Utils.getFileContent(function(attrContent) {
+                                //     new AttributeNetworkDataAdapter({
+                                //         //                                ignoreColumns: ?,
+                                //         dataSource: new StringDataSource(attrContent),
+                                //         handlers: {
+                                //             'data:load': function(event) {
+                                //                 var attributeManager1 = event.attributeManager;
+                                //                 me.$.viewer.importVertexAttributeManager(attributeManager1);
+                                //
+                                //             },
+                                //             'error:parse': function(event) {
+                                //                 me.message = event.errorMsg;
+                                //             }
+                                //         }
+                                //     });
+                                // }, file.id);
+
+                            }
+                        });
+                    }, 100)
+                }
+            },
+            loadFile: function(filePath, cb) {
+                SteviaManager.getFileContent(this.sessionFileNameMap[filePath]._id, function(content) {
+                    cb(content);
+                });
+            },
+            contentChanged: function(neo, old) {
+                // OLD
+                // OLD
+                // OLD
+                // OLD
+                // OLD
+                if (neo == undefined || neo == "") {
+                    return;
+                }
+                var me = this;
+                this.intermediates = this.intermediates.split("|");
+                this.seedList = this.seedList.split("|");
+                var adapter = new SIFNetworkDataAdapter({
+                    dataSource: new StringDataSource(this.content),
+                    handlers: {
+                        'data:load': function(event) {
+                            //me.processData(event.graph);
+                            me.$.viewer.setGraph(event.graph);
+                            me.$.viewer.setLayout("Force directed");
+
+                            me.$.viewer.setGraph(event.graph);
+                            me.$.viewer.setVertexDefaultDisplayProperty("color", "#c0c0c0")
+                            me.$.viewer.setEdgeDefaultDisplayProperty("shape", "undirected")
+                            for (var i = 0; i < me.intermediates.length; i++) {
+                                var intermediate = me.intermediates[i];
+                                var vertex = me.$.viewer.graph.getVertexById(intermediate);
+                                if (vertex == null)
+                                    continue;
+                                vertex.renderer.set("shape", "square");
+                                vertex.renderer.set("width", 20);
+                                vertex.renderer.set("color", "#eaeaea");
+
+                            }
+                            for (var i = 0; i < me.seedList.length; i++) {
+                                var seed = me.seedList[i];
+                                var vertex = me.$.viewer.graph.getVertexById(seed);
+                                if (vertex == null)
+                                    continue;
+                                me.seedListExists = true;
+                                vertex.renderer.set("shape", "ellipse");
+                                vertex.renderer.set("width", 30);
+                                vertex.renderer.set("height", 20);
+                                vertex.renderer.set("color", "#c0c0c0");
+
+                            }
+
+                            //                            me.$.output.querySelector("#" + divId).appendChild(networkViewer);
+
+                        },
+                        'error:parse': function(event) {
+                            console.log("ERRORRRR");
+                        }
+                    }
+                });
+
+            },
+            handleSaveSession: function(e) {
+                var name = this.$.sessionNameInput.value;
+                if (name != '') {
+                    this.fire('save-cellmaps-session', {
+                        name: name,
+                        nv: this.$.networkViewer
+                    });
+                }
+            }
+        })
+    </script>
+</dom-module>
