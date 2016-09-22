@@ -7,7 +7,6 @@ HTML5 systems biology tool
 ```bash
 git clone https://github.com/opencb/cell-maps.git
 cd cell-maps/
-git submodule update --init
 ```
 
 
@@ -18,7 +17,7 @@ cd cell-maps/
 ```
 
 ### Install Node
-To install node click [here.](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager)
+To install node click [here.](https://nodejs.org/en/download/package-manager/)
 
 **What is `npm`?** npm stands for [node packaged modules](http://npmjs.org/) is the node dependency manager.
 
@@ -28,8 +27,6 @@ To install node click [here.](https://github.com/joyent/node/wiki/Installing-Nod
 
 sudo npm install -g bower
 npm install
-bower install
-cd lib/jsorolla
 bower install
 
 ### Run builder

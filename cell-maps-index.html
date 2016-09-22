@@ -1,66 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-    <meta charset="utf-8">
-    <meta name="description" content="">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Cell Maps</title>
-    <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+    <head>
+        <meta charset="utf-8">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+        <title>Cell Maps</title>
+        <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
 
-    <!-- Chrome for Android theme color -->
-    <!--<meta name="theme-color" content="#303F9F">-->
-    <meta name="theme-color" content="#000000">
+        <!-- Chrome for Android theme color -->
+        <!--<meta name="theme-color" content="#303F9F">-->
+        <meta name="theme-color" content="#000000">
 
-    <!-- Web Application Manifest -->
-    <link rel="manifest" href="manifest.json">
+        <!-- Web Application Manifest -->
+        <link rel="manifest" href="manifest.json">
 
-    <!-- Windows Theme color -->
-    <meta name="msapplication-TileColor" content="#3372DF">
+        <!-- Windows Theme color -->
+        <meta name="msapplication-TileColor" content="#3372DF">
 
-    <!-- Add to homescreen for Chrome on Android -->
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Cell Maps">
+        <!-- Add to homescreen for Chrome on Android -->
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="application-name" content="Cell Maps">
 
-    <!-- Add to homescreen for Safari on iOS -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="apple-mobile-web-app-title" content="Cell Maps">
+        <!-- Add to homescreen for Safari on iOS -->
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        <meta name="apple-mobile-web-app-title" content="Cell Maps">
 
-    <!-- Force Microsoft use latest web tech -->
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <!-- Force Microsoft use latest web tech -->
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
-    <!-- END meta -->
+        <!-- END meta -->
 
-    <!--Config-->
-    <script src="conf/config.js"></script>
+        <!--Config-->
+        <script src="conf/config.js"></script>
+        <script src="conf/bioformats.js"></script>
 
-    <!--Fonts-->
-    <link href='lib/jsorolla/styles/fonts/fonts.css' rel='stylesheet' type='text/css'>
-    <link href='bower_components/fontawesome/css/font-awesome.min.css' rel='stylesheet' type='text/css'>
+        <!--Fonts-->
+        <link href='bower_components/stevia-elements/fonts/fonts.css' rel='stylesheet' type='text/css'>
+        <link href='bower_components/fontawesome/css/font-awesome.min.css' rel='stylesheet' type='text/css'>
 
-    <!--CSS-->
-    <link href='lib/jsorolla/src/lib/components/jso-global.css' rel='stylesheet' type='text/css'>
-    <link href='lib/jsorolla/src/lib/components/jso-form.css' rel='stylesheet' type='text/css'>
-    <link href='lib/jsorolla/src/lib/components/jso-dropdown.css' rel='stylesheet' type='text/css'>
+        <!--CSS-->
+        <link href='bower_components/stevia-elements/css/global.css' rel='stylesheet' type='text/css'>
+        <link href='bower_components/stevia-elements/css/form.css' rel='stylesheet' type='text/css'>
 
 
-    <!--Web Components-->
-    <script src="bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+        <!--Web Components-->
+        <script src="bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
 
-    <link rel="import" href="src/cell-maps-element.html">
+        <link rel="import" href="cell-maps-element.html">
 
-    <link rel="import" href="conf/theme.html">
+        <link rel="import" href="conf/theme.html">
 
-</head>
+    </head>
 
-<body unresolved class="fullbleed">
-    <cell-maps-element version="1.0.4" maintenance="13 Nov 2015 8:00:00 GMT+0100,13 Nov 2015 9:00:00 GMT+0100"></cell-maps-element>
-    <!-- <cell-maps-element version="1.0.4"></cell-maps-element> -->
-    <script>
-        var cellMaps = document.querySelector('cell-maps-element');
-    </script>
+    <body unresolved class="fullbleed">
+        <cell-maps-element version="1.1.0" maintenance="13 Nov 2015 8:00:00 GMT+0100,13 Nov 2015 9:00:00 GMT+0100"></cell-maps-element>
+        <!-- <cell-maps-element version="1.1.0"></cell-maps-element> -->
+        <script>
+            var cellMaps = document.querySelector('cell-maps-element');
+        </script>
 
-</body>
+    </body>
 
 </html>

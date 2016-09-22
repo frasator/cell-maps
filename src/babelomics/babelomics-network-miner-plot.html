@@ -1,0 +1,226 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<script src="../../bower_components/network-viewer/conf/config.js"></script>
+<link rel="import" href="../../bower_components/network-viewer/network-viewer.html">
+
+<dom-module id="babelomics-network-miner-plot">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+         :host {
+            display: block;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        network-viewer {
+            /*max-width: 1000px;*/
+            border-color: rgb(217, 217, 217);
+            border-style: solid;
+            border-width: 1px;
+            height: calc(100% - 50px);
+        }
+
+        .button {
+            background-color: var(--dark-button-color) !important;
+            color: var(--text-primary-color) !important;
+        }
+
+        .button:hover {
+            background-color: var(--light-button-color) !important;
+        }
+    </style>
+    <template>
+        <div id="elSizeAvg"></div>
+        <div id="elSizeScore"></div>
+
+        <!-- var elSizeAvg = document.createElement("div");
+        elSizeAvg.id = div.id + "_avg";
+        div.appendChild(elSizeAvg);
+        var elSizeScore = document.createElement("div");
+        elSizeScore.id = div.id + "_score";
+        div.appendChild(elSizeScore); -->
+    </template>
+    <script>
+        Polymer({
+            is: "babelomics-network-miner-plot",
+            properties: {
+                file: {
+                    type: String,
+                },
+                sessionFileNameMap: {
+                    type: Object
+                }
+            },
+            observers: [
+                'filesChanged(file, sessionFileNameMap)'
+            ],
+            filesChanged: function(file, sessionFileNameMap) {
+                var me = this;
+                if (file != null && file != "" && sessionFileNameMap != null) {
+                    this.async(function() {
+                        this.loadFile(file, function(content) {
+
+                            var json = content;
+                            var chartWidth = 600;
+
+                            /** Create data for charts **/
+                            var sizeAvgList = [];
+                            var sizeAvgListSig = [];
+
+                            var sizeScoreList = [];
+                            var sizeScoreListSig = [];
+
+                            for (var idx = 0; idx < json.length; idx++) {
+                                var j = json[idx];
+                                var nodesLength = j.nodes.length;
+                                var rawValue = j.rawValue;
+                                var score = j.score;
+                                var itemsSizeAvg = new Array();
+                                var itemsSizeScore = new Array();
+
+                                itemsSizeAvg.push(nodesLength);
+                                itemsSizeAvg.push(rawValue);
+
+                                itemsSizeScore.push(nodesLength);
+                                itemsSizeScore.push(score);
+
+                                if (!j.significant) {
+                                    sizeAvgList.push(itemsSizeAvg);
+                                    sizeScoreList.push(itemsSizeScore);
+                                } else {
+                                    sizeAvgListSig.push(itemsSizeAvg);
+                                    sizeScoreListSig.push(itemsSizeScore);
+                                }
+                            }
+                            new Highcharts.Chart({
+                                chart: {
+                                    renderTo: me.$.elSizeAvg,
+                                    type: 'scatter',
+                                    zoomType: 'xy',
+                                    width: chartWidth
+                                },
+                                title: {
+                                    text: 'Size vs. Avg. node per component'
+                                },
+                                xAxis: {
+                                    title: {
+                                        enabled: true,
+                                        text: 'Size'
+                                    },
+                                    startOnTick: true,
+                                    endOnTick: true,
+                                    showLastLabel: true
+                                },
+                                yAxis: {
+                                    title: {
+                                        text: 'Avg. node per component'
+                                    }
+                                },
+                                plotOptions: {
+                                    scatter: {
+                                        marker: {
+                                            radius: 5,
+                                            states: {
+                                                hover: {
+                                                    enabled: true,
+                                                    lineColor: 'rgb(100,100,100)'
+                                                }
+                                            }
+                                        },
+                                        states: {
+                                            hover: {
+                                                marker: {
+                                                    enabled: false
+                                                }
+                                            }
+                                        },
+                                        tooltip: {
+                                            headerFormat: '<b>{series.name}</b><br>',
+                                            pointFormat: '{point.x} , {point.y} '
+                                        }
+                                    }
+                                },
+                                series: [{
+                                    name: 'Size / Avg. node per component',
+                                    color: 'rgba(119, 152, 191, .5)',
+                                    data: sizeAvgList
+                                }, {
+                                    name: 'Selected',
+                                    color: 'rgba(223, 83, 83, .5)',
+                                    data: sizeAvgListSig
+
+                                }]
+                            });
+                            new Highcharts.Chart({
+                                chart: {
+                                    renderTo: me.$.elSizeScore,
+                                    type: 'scatter',
+                                    zoomType: 'xy',
+                                    width: chartWidth
+                                },
+                                title: {
+                                    text: 'Size vs. Score'
+                                },
+                                xAxis: {
+                                    title: {
+                                        enabled: true,
+                                        text: 'Size'
+                                    },
+                                    startOnTick: true,
+                                    endOnTick: true,
+                                    showLastLabel: true
+                                },
+                                yAxis: {
+                                    title: {
+                                        text: 'Score'
+                                    }
+                                },
+                                plotOptions: {
+                                    scatter: {
+                                        marker: {
+                                            radius: 5,
+                                            states: {
+                                                hover: {
+                                                    enabled: true,
+                                                    lineColor: 'rgb(100,100,100)'
+                                                }
+                                            }
+                                        },
+                                        states: {
+                                            hover: {
+                                                marker: {
+                                                    enabled: false
+                                                }
+                                            }
+                                        },
+                                        tooltip: {
+                                            headerFormat: '<b>{series.name}</b><br>',
+                                            pointFormat: '{point.x} , {point.y} '
+                                        }
+                                    }
+                                },
+                                series: [{
+                                    name: 'Size / Score',
+                                    color: 'rgba(119, 152, 191, .5)',
+                                    data: sizeScoreList
+                                }, {
+                                    name: 'Selected',
+                                    color: 'rgba(223, 83, 83, .5)',
+                                    data: sizeScoreListSig
+
+                                }]
+                            });
+                        });
+
+                    }, 100)
+                }
+            },
+            loadFile: function(filePath, cb) {
+                SteviaManager.getFileContent(this.sessionFileNameMap[filePath]._id, function(content) {
+                    cb(content);
+                });
+            },
+
+        })
+    </script>
+</dom-module>
