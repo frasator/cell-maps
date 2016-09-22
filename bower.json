@@ -25,9 +25,8 @@
         "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.3.1",
         "iron-list": "^1.2.8",
         "fontawesome": "*",
-        "stevia-elements": "git@gitlab.bioinfo.cipf.es:stevia/stevia-elements.git#develop",
-        "network-viewer": "git@gitlab.bioinfo.cipf.es:bioinfo/network-viewer.git#develop",
-        "pathway-viewer": "git@gitlab.bioinfo.cipf.es:bioinfo/pathway-viewer.git#develop",
+        "stevia-elements": "git@gitlab.bioinfo.cipf.es:stevia/stevia-elements.git#master",
+        "network-viewer": "git@gitlab.bioinfo.cipf.es:bioinfo/network-viewer.git#master",
         "file-saver.js": "~1.20150507.2"
     },
     "devDependencies": {}
