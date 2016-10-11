@@ -5,7 +5,7 @@ HTML5 systems biology tool
 
 ## Download code
 ```bash
-git clone https://github.com/opencb/cell-maps.git
+git clone https://github.com/frasator/cell-maps.git
 cd cell-maps/
 ```
 
