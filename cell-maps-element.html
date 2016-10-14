@@ -1,4 +1,3 @@
-<script src="bower_components/file-saver.js/FileSaver.js"></script>
 <script src="bower_components/pako/dist/pako.min.js"></script>
 
 <script src="bower_components/stevia-elements/src/manager/stevia-manager.js"></script>
@@ -420,6 +419,7 @@
                             });
                             me.$.networkViewer.loadJSON(JSON.parse(jsonStr));
                             me.$.networkViewer.lastLoadedFileName = me.$.fileBrowser.selectedFile.name;
+                            me.$.networkViewer.centerNetwork();
                         }
                     }
                 });

@@ -26,8 +26,7 @@
         "iron-list": "^1.2.8",
         "fontawesome": "*",
         "stevia-elements": "git@gitlab.bioinfo.cipf.es:stevia/stevia-elements.git#master",
-        "network-viewer": "git@gitlab.bioinfo.cipf.es:bioinfo/network-viewer.git#master",
-        "file-saver.js": "~1.20150507.2"
+        "network-viewer": "git@gitlab.bioinfo.cipf.es:bioinfo/network-viewer.git#master"
     },
     "devDependencies": {}
 }
