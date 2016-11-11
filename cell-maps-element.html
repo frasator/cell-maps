@@ -132,7 +132,8 @@
 
         .save-session-bar {
             background-color: var(--light-secondary-color);
-            padding: 15px 5px 5px 5px;
+            padding: 5px 5px 5px 5px;
+            border-top:1px solid var(--divider-color);
         }
 
         .button {
@@ -158,7 +159,7 @@
 
 
         <div class="content" menu-option="home">
-            <network-viewer id="networkViewer" user-data="{{userData}}" studies="{{studies}}" selectedStudy="{{selectedStudy}}" projects="{{projects}}" on-need-refresh="handleUserNeedRefresh" on-session-manager-hidden="handleSessionManagerHidden" on-snow="handleSnowMenu" on-network-miner="handleNetworkMinerMenu" on-fatigo="handleFatigoMenu" vertex-columns="{{columns}}" vertices="{{vertices}}" selected-vertices="{{selected}}">
+            <network-viewer id="networkViewer" user-data="{{userData}}" on-need-refresh="handleUserNeedRefresh" on-session-manager-hidden="handleSessionManagerHidden" on-snow="handleSnowMenu" on-network-miner="handleNetworkMinerMenu" on-fatigo="handleFatigoMenu" vertex-columns="{{columns}}" vertices="{{vertices}}" selected-vertices="{{selected}}">
             </network-viewer>
 
             <stv-panel hidden collapsible fixed movable closable id="snowPanel" class="jobform">
@@ -480,6 +481,7 @@
             },
             handleCancelSessionName: function(e) {
                 this.$.saveSessionFolder.reset();
+                this.$.saveSessionFolderPanel.hide();
             },
 
             handleSnowMenu: function(e) {
