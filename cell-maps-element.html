@@ -57,7 +57,7 @@
         .content {
             position: absolute;
             width: 100%;
-            top: 60px;
+            top: 50px;
             /*height: calc(100vh - 60px);*/
             /*background-color: transparent;*/
         }
@@ -93,12 +93,12 @@
         }
 
         stv-report {
-            height: calc(100vh - 60px);
+            height: calc(100vh - 50px);
             overflow-y: auto;
         }
 
         network-viewer {
-            height: calc(100vh - 60px);
+            height: calc(100vh - 50px);
             box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.2);
         }
 
@@ -244,16 +244,16 @@
                     <i class="fa fa-cloud"></i>
                     <span class="option-text">My Sessions</span>
                 </div> -->
-                <div title="Save session" class="option" on-click="handleLoggedOnlyMenuPanel" data-panel="saveSessionFolderPanel">
+                <div title="Save session" class="option" on-click="handleMenuPanel" login-required data-panel="saveSessionFolderPanel">
                     <i class="fa fa-cloud"></i>
                     <span class="option-text">Save session</span>
                 </div>
                 <div class="flex"></div>
-                <div title="Browse my data" class="option" on-click="handleLoggedOnlyMenuPanel" data-panel="fileBrowserPanel">
+                <div title="Browse my data" class="option" on-click="handleMenuPanel" login-required data-panel="fileBrowserPanel">
                     <i class="fa fa-folder"></i>
                     <span class="option-text">My data</span>
                 </div>
-                <div title="Browse my jobs" class="option" on-click="handleLoggedOnlyMenuPanel" data-panel="jobBrowserPanel">
+                <div title="Browse my jobs" class="option" on-click="handleMenuPanel" login-required data-panel="jobBrowserPanel">
                     <i class="fa fa-rocket"></i>
                     <span class="option-text">My analysis</span>
                 </div>
