@@ -21,9 +21,9 @@
         "tests"
     ],
     "dependencies": {
-        "stevia-elements": "git://github.com/babelomics/stevia-elements.git#master",
-        "network-viewer": "git://github.com/babelomics/network-viewer.git#master",
-        "pathway-viewer": "git://gitlab.bioinfo.cipf.es/bioinfo/pathway-viewer.git#master"
+        "stevia-elements": "https://github.com/frasator/stevia-elements.git#master",
+        "network-viewer": "https://github.com/frasator/network-viewer.git#master",
+        "pathway-viewer": "http://github.com/frasator/pathway-viewer.git#master"
     },
     "devDependencies": {}
 }
