@@ -1,18 +1,5 @@
 {
     "name": "cell-maps",
-    "description": "",
-    "repository": {
-        "type": "git",
-        "url": ""
-    },
-    "main": [
-        "cell-maps-index.html"
-    ],
-    "authors": [
-        "Francisco Salavert Torres <frasator@gmail.com>"
-    ],
-    "license": "GPL-3.0",
-    "keywords": [],
     "ignore": [
         "**/.*",
         "node_modules",
@@ -25,5 +12,5 @@
         "network-viewer": "https://github.com/frasator/network-viewer.git#master",
         "pathway-viewer": "http://github.com/frasator/pathway-viewer.git#master"
     },
-    "devDependencies": {}
+    "private": true
 }

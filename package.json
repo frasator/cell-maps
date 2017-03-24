@@ -1,6 +1,9 @@
 {
-    "name": "CellMaps",
+    "name": "cell-maps",
+    "description": "",
     "version": "1.1.1",
+    "license": "GPL-3.0",
+    "author": "Francisco Salavert Torres <frasator@gmail.com>",
     "repository": {
         "type": "git",
         "url": "https://github.com/frasator/cell-maps.git"
@@ -9,8 +12,8 @@
         "build": "node ./build.js"
     },
     "devDependencies": {
-        "async": "^2.0.0-rc.6",
-        "shelljs": "^0.7.0",
-        "vulcanize": "^1.14.8"
+        "async": "^2.1.5",
+        "shelljs": "^0.7.7",
+        "vulcanize": "1.14.8"
     }
 }
