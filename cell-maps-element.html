@@ -114,8 +114,38 @@
             width: 300px;
         }
 
-        @media (max-width: 1100px) {
-            .option-text {
+        @media (max-width: 1150px) {
+            span.description {
+                display: none !important;
+            }
+        }
+
+        @media (max-width: 980px) {
+            div.title {
+                display: none !important;
+            }
+        }
+
+        @media (max-width: 920px) {
+            div.icon {
+                display: none !important;
+            }
+        }
+
+        @media (max-width: 920px) {
+            stv-header ::content #right .option-text {
+                display: none;
+            }
+        }
+
+        @media (max-width: 670px) {
+            stv-header ::content .option-text {
+                font-size: 0.8em;
+            }
+        }
+
+        @media (max-width: 590px) {
+            stv-header ::content .option-text {
                 display: none;
             }
         }
@@ -133,7 +163,7 @@
         .save-session-bar {
             background-color: var(--light-secondary-color);
             padding: 5px 5px 5px 5px;
-            border-top:1px solid var(--divider-color);
+            border-top: 1px solid var(--divider-color);
         }
 
         .button {
